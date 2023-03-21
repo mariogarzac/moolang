@@ -132,3 +132,6 @@ dmypy.json
 # Tareas
 Files
 main
+Tareas/parser.out
+Tareas/parsetab.py
+
