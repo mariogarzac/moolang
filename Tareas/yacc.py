@@ -11,7 +11,7 @@ from MyLex import tokens
 # program start
 def p_prog(p):
    '''
-    prog :  PROGRAMA ID SEMICOL prog_prime bloque
+    prog :  PROGRAM ID SEMICOL prog_prime bloque
    '''
 
 def p_prog_prime(p):

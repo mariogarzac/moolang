@@ -8,7 +8,7 @@
 import ply.lex as lex
 
 tokens = (
-   'PROGRAMA',
+   'PROGRAM',
    'ID',
    'COLON',
    'SEMICOL',
@@ -37,7 +37,7 @@ tokens = (
 )
 
 reserved = {
-   'programa' : 'PROGRAMA',
+   'program' : 'PROGRAM',
    'var' : 'VAR',
    'print' : 'PRINT',
    'if' : 'IF',

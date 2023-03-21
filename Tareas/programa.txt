@@ -1,5 +1,5 @@
-programa ejemplo; 
-var x, y : int; z : float
+program ejemplo; 
+var x, y : int; z : float;
 {
     x = 10;
     y = 10;
