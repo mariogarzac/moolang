@@ -1,3 +1,9 @@
+# ----------------------------------
+#
+#           Mario Garza Chapa
+#               A01720245
+#
+# ----------------------------------
 
 import ply.yacc as yacc
 from MyLex import tokens 
@@ -28,7 +34,7 @@ def p_vars_prime(p):
 
 def p_vars_doubleprime(p):
     '''
-    vars_doubleprime  : ID vars_prime SEMICOL tipo SEMICOL vars_prime
+    vars_doubleprime  : ID vars_prime COLON tipo SEMICOL vars_doubleprime
                       | empty
     '''
 
@@ -119,8 +125,8 @@ def p_expresion_prime(p):
 
 def p_expresion_doubleprime(p):
     '''
-    expresion_doubleprime : GREATER 
-                          | LESSTHAN
+    expresion_doubleprime : GT 
+                          | LT
                           | NOT
     '''
 
@@ -173,8 +179,8 @@ def p_factor_doubleprime(p):
 def p_var_cte(p):
     '''
     var_cte : ID 
-            | CTE_INT
             | CTE_FLOAT
+            | CTE_INT
     '''
 
 def p_empty(p):
@@ -185,27 +191,13 @@ def p_empty(p):
 
 def p_error(p):
 	if p is not None:
-		print ("Line %s, illegal token %s" % (p.lineno, p.value))
+		print ("Illegal token %s" % (p.value))
 	else:
 		print ("Unexpected end of input")
 	exit()
 
-data = '''
-programa ejemplo; 
-var x, y : int; 
-{
-    x = 10;
-    y = 10;
+with open('programa.txt', 'r') as file:
+    data = file.read()
 
-    if (x < 11){
-        print("it is again")
-        };
-}
-'''
 parser = yacc.yacc()
 result = parser.parse(data)
-
-
-# var x,y : int = 10;
-# var y : int = 10;
-# {x + y} 
