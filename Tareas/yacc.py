@@ -127,7 +127,7 @@ def p_expresion_doubleprime(p):
     '''
     expresion_doubleprime : GT 
                           | LT
-                          | NOT
+                          | NE
     '''
 
 # plus and minus 

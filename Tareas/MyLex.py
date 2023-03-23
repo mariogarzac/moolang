@@ -24,7 +24,7 @@ tokens = (
    'EQUAL',
    'GT',
    'LT',
-   'NOT',
+   'NE',
    'CTE_INT',
    'CTE_FLOAT',
    'CTE_STRING',
@@ -57,7 +57,7 @@ t_TIMES =  r'\*'
 t_DIVIDE =  r'/'
 t_GT = r'<'
 t_LT = r'>'
-t_NOT = r'<>'
+t_NE = r'<>'
 t_COMMA =  r','
 t_COLON =  r':'
 t_SEMICOL =  r';'
@@ -78,7 +78,6 @@ def t_CTE_INT(t):
     r'\d+'
     t.value = int(t.value)    
     return t
-
 
 def t_newline(t):
     r'\n+'
