@@ -129,9 +129,6 @@ dmypy.json
 .pyre/
 
 # Other
-# Tareas
-Files
 main
-Tareas/parser.out
-Tareas/parsetab.py
+Tareas
 
