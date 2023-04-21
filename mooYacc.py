@@ -4,7 +4,7 @@ from mooLex import tokens
 # program start
 def p_prog(p):
     '''
-    prog : prog_prime prog_doubleprime MAIN LBRACKET block RBRACKET 
+    prog : prog_prime prog_doubleprime MAIN LCURLY block RCURLY 
     '''
 
 def p_prog_prime(p):
@@ -22,7 +22,7 @@ def p_prog_doubleprime(p):
 # variable declaration
 def p_dec_vars(p):
     '''
-    dec_vars : var dec_vars
+    dec_vars : vars dec_vars
              | arr dec_vars
              | empty
     '''
@@ -48,12 +48,12 @@ def p_vars_doubleprime(p):
 # array declaration
 def p_arr(p):
     '''
-    arr : VAR smp_type ID LSBRACKET CTE_I RSBRACKET arr_prime SEMICOL
+    arr : VAR smp_type ID LBRACKET CTE_INT RBRACKET arr_prime SEMICOL
     '''
 
 def p_arr_prime(p):
     '''
-    arr_prime : LSBRACKET CTE_I RSBRACKET
+    arr_prime : LBRACKET CTE_INT RBRACKET
               | empty
     '''
 
@@ -74,8 +74,7 @@ def p_sp_type(p):
 # functions
 def p_function(p):
     '''
-    function : FUNC ID LPAREN param RPAREN MINUS\
-               GTSYM function_prime 
+    function : FUNC ID LPAREN param RPAREN MINUS GTSYM function_prime 
     '''
 
 def p_function_prime(p):
@@ -87,13 +86,13 @@ def p_function_prime(p):
 # simple type functions
 def p_function_st(p):
     '''
-    function_st : smp_type LBRACKET dec_vars block RETURN exp SEMICOL RBRACKET
+    function_st : smp_type LCURLY dec_vars block RETURN exp SEMICOL RCURLY
     '''
 
 # void functions
 def p_function_void(p):
     '''
-    function_void : VOID LBRACKET dec_vars block RBRACKET
+    function_void : VOID LCURLY dec_vars block RCURLY
     '''
 
 # parameters
@@ -116,6 +115,24 @@ def p_block(p):
           | empty
     '''
 
+def p_variable(p):
+    '''
+    variable : ID variable_prime 
+             | empty
+    '''
+
+def p_variable_prime(p):
+    '''
+    variable_prime : LBRACKET exp RBRACKET variable_doubleprime
+                   | empty
+    '''
+
+def p_variable_doubleprime(p):
+    '''
+    variable_doubleprime : LBRACKET exp RBRACKET 
+                         | empty
+    '''
+
 # statements
 def p_statement(p):
     '''
@@ -130,12 +147,12 @@ def p_statement(p):
 
 # variable assignment 
 def p_assignment(p):
-     '''
+    '''
     assignment : variable EQUAL assignment_prime SEMICOL 
     '''
 
 def p_assignment_prime(p):
-     '''
+    '''
     assignment_prime : exp
                      | func_call
     '''
@@ -148,7 +165,7 @@ def p_c_input(p):
 
 def p_c_input_prime(p):
     '''
-    c_input_prime : comma variable c_input_prime
+    c_input_prime : COMMA variable c_input_prime
                   | empty
     '''
 
@@ -161,7 +178,7 @@ def p_c_print(p):
 def p_c_print_prime(p):
     '''
     c_print_prime : exp c_print_doubleprime 
-                  | CTE_C c_print_doubleprime
+                  | CTE_CHAR c_print_doubleprime
     '''
 
 def p_c_print_doubleprime(p):
@@ -173,27 +190,25 @@ def p_c_print_doubleprime(p):
 # conditionals 
 def p_condition(p):
     '''
-    condition : IF LPAREN exp RPAREN LBRACKET block RBRACKET\
-                 condition_prime
+    condition : IF LPAREN exp RPAREN LCURLY block RCURLY condition_prime
     '''
 
 def p_condition_prime(p):
     '''
-    condition_prime : ELSE LBRACKET block RBRACKET
+    condition_prime : ELSE LCURLY block RCURLY
                     | empty
     '''
 
 # for loops
 def p_for_loop(p):
     '''
-    for_loop : FOR id IN RANGE LPAREN exp COMMA exp RPAREN\
-          LBRACKET block RBRACKET
+    for_loop : FOR ID IN RANGE LPAREN exp COMMA exp RPAREN LCURLY block RCURLY
     '''
 
 # while loops
 def p_while_loop(p):
     '''
-    while_loop : WHILE LPAREN exp RPAREN LBRACKET block RBRACKET
+    while_loop : WHILE LPAREN exp RPAREN LCURLY block RCURLY
     '''
 
 # function calls 
@@ -211,13 +226,13 @@ def p_std_func(p):
 
 def p_std_func_prime(p):
     '''
-    std_func_prime : EXP std_func_doubleprime 
+    std_func_prime : exp std_func_doubleprime
                    | empty
     '''
 
 def p_std_func_doubleprime(p):
     '''
-    std_func_doubleprime : comma EXP std_func_doubleprime 
+    std_func_doubleprime : COMMA exp std_func_doubleprime
                          | empty
     '''
 
@@ -255,17 +270,17 @@ def p_generate_key_func(p):
 # file manipulation
 def p_open_file(p):
     '''
-    leer_arch : OPEN LPAREN CTE_C RPAREN
+    open_file : OPEN LPAREN CTE_CHAR RPAREN
     '''
 
 def p_read_file(p):
     '''
-    leer_arch : READ LPAREN ID RPAREN 
+    read_file : READ LPAREN ID RPAREN 
     '''
 
 def p_write_file(p):
     '''
-    write_file : WRITE LPAREN CTE_C ID RPAREN
+    write_file : WRITE LPAREN CTE_CHAR ID RPAREN
     '''
 
 def p_close_file(p):
@@ -281,7 +296,7 @@ def p_encrypt_func(p):
 
 def p_encrypt_func_prime(p):
     '''
-    encrypt_func_prime : CTE_C
+    encrypt_func_prime : CTE_CHAR
                        | ID
     '''
 
@@ -292,7 +307,7 @@ def p_decrypt_func(p):
 
 def p_decrypt_func_prime(p):
     '''
-    decrypt_func_prime : CTE_C
+    decrypt_func_prime : CTE_CHAR
                        | ID
     '''
 
@@ -303,7 +318,7 @@ def p_hash_sha256(p):
 
 def p_hash_sha256_prime(p):
     '''
-    hash_sha256_prime : CTE_C
+    hash_sha256_prime : CTE_CHAR
                       | ID
     '''
 
@@ -314,14 +329,14 @@ def p_hash_md5(p):
 
 def p_hash_md5_prime(p):
     '''
-    hash_md5_prime : CTE_C
+    hash_md5_prime : CTE_CHAR
                    | ID
     '''
 
 # expressions
 def p_exp(p):
     '''
-    exp :  t_exp exp_prime
+    exp : t_exp exp_prime
     '''
 
 def p_exp_prime(p):
@@ -337,12 +352,13 @@ def p_t_exp(p):
 
 def p_t_exp_prime(p):
     '''
-    t_exp_prime : AND t_exp_prime 
+    t_exp_prime : AND t_exp
+                | empty
     '''
 
 def p_g_exp(p):
     '''
-    g_exp : m_exp g_exp 
+    g_exp : m_exp g_exp_prime
     '''
 
 def p_g_exp_prime(p):
@@ -353,18 +369,18 @@ def p_g_exp_prime(p):
 
 def p_g_exp_doubleprime(p):
     '''
-    g_exp_doubleprime : -GT
-                      | -LT
-                      | -GE
-                      | -LE
-                      | -EQ
-                      | -NE
+    g_exp_doubleprime : GT
+                      | LT
+                      | GE
+                      | LE
+                      | EQ
+                      | NE
                       | empty
     '''
 
 def p_m_exp(p):
     '''
-    m_exp : t m_exp_prime 
+    m_exp : term m_exp_prime 
     '''
 
 def p_m_exp_prime(p):
@@ -386,27 +402,40 @@ def p_term(p):
 
 def p_term_prime(p):
     '''
-    term_prime : term_doubleprime term
+    term_prime : TIMES term
+               | DIVIDE term
                | empty
     '''
 
-def p_term_doubleprime(p):
-    '''
-    term_doubleprime : TIMES 
-                     | DIVIDE
-                     | empty
-    '''
+# def p_term_prime(p):
+#     '''
+#     term_prime : term_doubleprime term
+#                | empty
+#     '''
+#
+# def p_term_doubleprime(p):
+#     '''
+#     term_doubleprime : TIMES 
+#                      | DIVIDE
+#                      | empty
+#     '''
 
-def p_f(p):
+def p_factor(p):
     '''
     factor : LPAREN exp RPAREN
-           | CTE_I 
-           | CTE_F
-           | CTE_C
+           | CTE_INT
+           | CTE_FLOAT
+           | CTE_CHAR
            | variable
            | func_call
        
     '''
+
+def p_empty(p):
+	'''
+	empty : 
+	'''
+	pass
 
 def p_error(p):
 	if p is not None:
@@ -418,5 +447,7 @@ def p_error(p):
 with open('Files/example.moo', 'r') as file:
     data = file.read()
 
-parser = yacc.yacc()
+parser = yacc.yacc(debug = True)
 result = parser.parse(data)
+
+

@@ -1,10 +1,3 @@
-# ----------------------------------
-#
-#           Mario Garza Chapa
-#               A01720245
-#
-# ----------------------------------
-
 import ply.lex as lex
 
 tokens = (
@@ -27,24 +20,26 @@ tokens = (
     'VOID',
     'FILE',
     'INPUT',
+    'GENERATE_KEY',
     'HASH_SHA256',
     'HASH_MD5',
-    'GENERATE_KEY',
+    'OPEN',
+    'READ',
+    'WRITE',
+    'CLOSE',
     'ENCRYPT',
     'DECRYPT',
     'EQUAL',
     'CTE_INT',
     'CTE_FLOAT',
-    'CTE_STRING',
+    'CTE_CHAR',
     'SEMICOL',
-    'RPAREN',
     'LPAREN',
-    'MINUS',
+    'RPAREN',
     'COMMA',
     'CHAR',
-    'LSQBRACKET',
-    'RSQBRACKET',
-    'RBRACKET',
+    'LCURLY',
+    'RCURLY',
     'LBRACKET',
     'RBRACKET',
     'GTSYM',
@@ -60,7 +55,7 @@ tokens = (
     'DIVIDE',
 )
 
-reserved = (
+reserved = {
     'main' : 'MAIN',
     'var' : 'VAR',
     'func' : 'FUNC',
@@ -76,24 +71,27 @@ reserved = (
     'or' : 'OR',
     'int' : 'INT',
     'float' : 'FLOAT',
-    'char' : 'CHAR'
+    'char' : 'CHAR',
     'void' : 'VOID',
     'file' : 'FILE',
-    'input' : 'INPUT',
+    'open' : 'OPEN',
+    'read' : 'READ',
+    'write' : 'WRITE',
+    'close' : 'CLOSE',
     'hash_sha256' : 'HASH_SHA256',
     'hash_md5' : 'HASH_MD5',
     'generate_key' : 'GENERATE_KEY',
     'encrypt' : 'ENCRYPT',
     'decrypt' : 'DECRYPT',
-        )
+        }
 
 
 t_LPAREN =  r'\('
 t_RPAREN =  r'\)'
-t_LSBRACKET=  r'\['
-t_RSBRACKET =  r'\]'
-t_LBRACKET=  r'\{'
-t_RBRACKET =  r'\}'
+t_LBRACKET=  r'\['
+t_RBRACKET =  r'\]'
+t_LCURLY=  r'\{'
+t_RCURLY =  r'\}'
 t_EQUAL =  r'='
 t_PLUS =  r'\+'
 t_MINUS =  r'-'
@@ -107,9 +105,8 @@ t_LE = r'-le'
 t_EQ = r'-eq'
 t_NE = r'-ne'
 t_COMMA =  r','
-t_COLON =  r':'
 t_SEMICOL =  r';'
-t_CTE_STRING = r'"[\w\d\s!?_\.]*"'
+t_CTE_CHAR = r'"[\w\d\s!?_\.:-]*"'
 t_ignore  = ' \t'
 
 def t_ID(t):
@@ -131,4 +128,21 @@ def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
 
+def t_error(t):
+    print("Illegal character '%s'" % t.value[0])
+    t.lexer.skip(1)
+
+
+with open('Files/example.moo', 'r') as file:
+    data = file.read()
+
+
+lexer = lex.lex()
+
+lexer.input(data)
+while True:
+    tok = lexer.token()
+    if not tok:
+        break
+    print(tok)
 
