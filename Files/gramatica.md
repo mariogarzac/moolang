@@ -1,147 +1,244 @@
 # Mario Garza Chapa
 # A01720245
+---
 
-#### **PROGRAM**
-PROG &rarr; PROG' PROG'' main lbracket BLOCK rbracket
-PROG' &rarr; DEC_VAR  PROG' | empty
-PROG'' &rarr; FUNCTION PROG'' | empty
+<h1 align="center"> Sintaxis moo </h1>
 
-#### **DEC_VAR**
-DEC_VAR &rarr; VARS DEC_ARR |  ARR DEC_ARR | empty
+#### **PROG**
+prog : prog1 prog2 MAIN LPAREN RPAREN LCURLY block RCURLY 
 
-#### **VARS**
-VARS &rarr; var VAR' id VAR'' semicol
-VARS' &rarr; SP_TYPE | SMP_TYPE
-VARS'' &rarr;  comma id VAR'' | empty
- 
-#### **ARR**
-ARR &rarr; var SMP_TYPE id lsbracket cte_i rsbracket ARR' semicol
-ARR' &rarr; lsbracket cte_i rsbracket | empty
+#### **PROG1**
+prog1 : dec_vars
+      | empty 
+
+#### **PROG2**
+prog2 : function prog2
+      | empty 
+
+#### **DEC_VARS**
+dec_vars : VAR dec_vars1 
+
+#### **DEC_VARS1**
+dec_vars1 : smp_type ID LBRACKET exp RBRACKET dec_vars3 SEMICOL dec_vars4
+          | smp_type ID dec_vars2 SEMICOL dec_vars4
+          | sp_type ID dec_vars2 SEMICOL dec_vars4
+
+#### **DEC_VARS2**
+dec_vars2 : COMMA ID dec_vars2
+          | empty
+
+#### **DEC_VARS3**
+dec_vars3 : LBRACKET exp RBRACKET
+          | empty
+
+#### **DEC_VARS4**
+dec_vars4 : dec_vars
+          | empty
 
 #### **SMP_TYPE**
-SMP_TYPE &rarr; int | float | char 
+smp_type : INT
+         | FLOAT
+         | CHAR
 
-#### **SMP_TYPE**
-SMP_TYPE &rarr; file
+#### **SP_TYPE**
+sp_type : FILE
 
 #### **FUNCTION**
-FUNCTION &rarr; func id lparentheses  PARAM rparentheses minus gtsym FUNCTION'
-FUNCTION' &rarr; FUNCTION_TS | FUNCTION_VOID
+function : FUNC ID LPAREN param RPAREN ARROW smp_type LCURLY function1 block RETURN exp SEMICOL RCURLY
+         | FUNC ID LPAREN param RPAREN ARROW VOID LCURLY function1 block RCURLY
 
-#### **FUNCTION_TS**
-FUNCTION_TS &rarr; SMP_TYPE lbracket DEC_VARS BLOCK return EXP semicol rbracket
-
-#### **FUNCTION_VOID**
-FUNCTION_VOID &rarr; void lbracket DEC_VARS BLOCK rbracket
+#### **FUNCTION1**
+function1 : dec_vars
+          | empty
 
 #### **PARAM**
-PARAM &rarr; SMP_TYPE id PARAM' 
-PARAM' &rarr; comma id PARAM'| empty
+param : smp_type ID param1
+      | empty
+
+#### **PARAM1**
+param1 : COMMA smp_type ID param1 
+       | empty
 
 #### **BLOCK**
-BLOCK &rarr; STATUS BLOCK | empty 
+block : statement block 
+      | empty
 
-#### **STATUS**
-STATUS &rarr; ASSIGNMENT | C_INPUT | C_PRINT | CONDITION | FOR_LOOP | WHILE_LOOP | FUNC_CALL 
+#### **STATEMENT**
+statement : assignment
+          | c_input
+          | c_print
+          | condition
+          | for_loop
+          | while_loop
+          | std_func
+          | sp_func
 
 #### **ASSIGNMENT**
-ASSIGNMENT &rarr; VARIABLE equal EXP FUNC_CALL semicol 
+assignment : variable EQUAL assignment1 SEMICOL 
 
-#### **C_INPUT**
-C_INPUT &rarr; input VARIABLE semicol
-
-#### **C_PRINT**
-C_PRINT &rarr; print lparentheses C_PRINT' rparentheses semicol
-C_PRINT' &rarr; EXP C_PRINT'' | cte_c C_PRINT''
-C_PRINT'' &rarr; comma C_PRINT' | empty
-
-#### **CONDITION**
-CONDITION &rarr; if lparentheses EXP rparentheses lbracket BLOCK rbracket CONDITION'
-CONDITION' &rarr; else lbracket BLOCK rbracket | empty
-
-#### **FOR_LOOP**
-FOR_LOOP &rarr; for id in range lparentheses EXP, EXP rparentheses lbracket BLOCK rbracket
-
-#### **WHILE_LOOP**
-WHILE_LOOP &rarr; while lparentheses EXP rparentheses lbracket BLOCK rparentheses
+#### **ASSIGNMENT1**
+assignment1 : exp
+            | sp_func
 
 #### **VARIABLE**
-VARIABLE &rarr; id VARIABLE'
-VARIABLE' &rarr;  lsbracket EXP rsbracket VARIABLE'' | empty
-VARIABLE'' &rarr;  lsbracket EXP rsbracket
+variable : ID variable1 
 
-#### **FUNC_CALL**
-FUNC_CALL &rarr; STD_FUNC | SP_FUNC
+#### **VARIABLE1**
+variable1 : LBRACKET exp RBRACKET variable2
+          | empty
+
+#### **VARIABLE2**
+variable2 : LBRACKET exp RBRACKET 
+          | empty
+
+#### **C_INPUT**
+c_input : INPUT variable c_input1 SEMICOL
+
+#### **C_INPUT1**
+c_input1 : COMMA variable c_input1
+         | empty
+
+#### **C_PRINT**
+c_print : PRINT LPAREN c_print1 RPAREN SEMICOL
+
+#### **C_PRINT1**
+c_print1 : exp c_print2 
+         | CTE_CHAR c_print2
+
+#### **C_PRINT2**
+c_print2 : COMMA c_print1
+         | empty
+
+#### **CONDITION**
+condition : IF LPAREN exp RPAREN LCURLY block RCURLY condition1
+
+#### **CONDITION1**
+condition1 : ELSE LCURLY block RCURLY
+           | empty
+
+#### **FOR_LOOP**
+for_loop : FOR ID IN RANGE LPAREN exp COMMA exp RPAREN LCURLY block RCURLY
+
+#### **WHILE_LOOP**
+while_loop : WHILE LPAREN exp RPAREN LCURLY block RCURLY
 
 #### **STD_FUNC**
-STD_FUNC &rarr; id lparentheses STD_FUNC' rparentheses
-STD_FUNC' &rarr; EXP STD_FUNC'' | empty
-STD_FUNC'' &rarr; comma EXP STD_FUNC'' | empty
+std_func : ID LPAREN std_func1 RPAREN 
 
-#### **FUNC_ESP**
-FUNC_ESP &rarr; GENERATE_KEY_FUNC | FILE_FUNC | CRYPTO_FUNC
+#### **STD_FUNC1**
+std_func1 : exp std_func2
+          | empty
+
+#### **STD_FUNC2**
+std_func2 : COMMA exp std_func2
+          | empty
+
+#### **SP_FUNC**
+sp_func : generate_key_func
+        | file_func
+        | crypto_func
 
 #### **FILE_FUNC**
-FILE_FUNC &rarr; OPEN_FILE | WRITE_FILE | READ_FILE | CLOSE_FILE
+file_func : open_file
+          | read_file
+          | write_file
+          | close_file
 
 #### **CRYPTO_FUNC**
-CRYPTO_FUNC &rarr; ENCRYPT_FUNC | DECRYPT_FUNC | HASH_SHA256 | HASH_MD5 
+crypto_func : encrypt_func 
+            | decrypt_func
+            | hash_sha256 
+            | hash_md5 
 
 #### **GENERATE_KEY_FUNC**
-GENERATE_KEY_FUNC &rarr; generate_key lparentheses rparentheses
-
-#### **ENCRYPT_FUNC**
-ENCRYPT_FUNC &rarr; encrypt lparentheses ENCRYPT_FUNC' comma id rparentheses
-ENCRYPT_FUNC' &rarr; cte_c | id
-
-#### **DECRYPT_FUNC**
-DECRYPT_FUNC &rarr; decrypt lparentheses DECRYPT_FUNC' comma id rparentheses
-DECRYPT_FUNC' &rarr; cte_c | id
-
-#### **HASH_SHA256**
-HASH_SHA256 &rarr; hash_sha265 lparentheses HASH_SHA256'  rparentheses
-HASH_SHA256' &rarr; cte_c | id
-
-#### **HASH_MD5**
-HASH_MD5 &rarr; HASH_MD5 lparentheses HASH_MD5' rparentheses
-HASH_MD5' &rarr; cte_c | id
+generate_key_func : GENERATE_KEY LPAREN RPAREN 
 
 #### **OPEN_FILE**
-OPEN_FILE &rarr; open lparentheses cte_c rparentheses
+open_file : OPEN LPAREN CTE_CHAR RPAREN
 
 #### **READ_FILE**
-READ_FILE &rarr; read lparentheses id rparentheses
+read_file : READ LPAREN ID RPAREN 
 
 #### **WRITE_FILE**
-WRITE_FILE &rarr; write lparentheses cte_c comma id rparentheses
+write_file : WRITE LPAREN CTE_CHAR ID RPAREN
 
 #### **CLOSE_FILE**
-CLOSE_FILE &rarr; close lparentheses id rparentheses
+close_file : CLOSE LPAREN ID RPAREN
+
+#### **ENCRYPT_FUNC**
+encrypt_func : ENCRYPT LPAREN encrypt_func1 COMMA ID RPAREN
+
+#### **ENCRYPT_FUNC1**
+encrypt_func1 : CTE_CHAR
+              | ID
+
+#### **DECRYPT_FUNC**
+decrypt_func : DECRYPT LPAREN decrypt_func1 COMMA ID RPAREN
+
+#### **DECRYPT_FUNC1**
+decrypt_func1 : CTE_CHAR
+              | ID
+
+#### **HASH_SHA256**
+hash_sha256 : HASH_SHA256 LPAREN hash_sha2561 RPAREN
+
+#### **HASH_SHA2561**
+hash_sha2561 : CTE_CHAR
+             | ID
+
+#### **HASH_MD5**
+hash_md5 : HASH_MD5 LPAREN hash_md51 RPAREN
+
+#### **HASH_MD51**
+hash_md51 : CTE_CHAR
+          | ID
 
 #### **EXP**
-EXP &rarr; T_EXP EXP'
-EXP' &rarr; or T_EXP | empty
+exp : t_exp exp1
+
+#### **EXP1**
+exp1 : OR exp
+     | empty
 
 #### **T_EXP**
-T_EXP &rarr; G_EXP T_EXP'
-T_EXP' &rarr; and T_EXP | empty
+t_exp : g_exp t_exp1
+
+#### **T_EXP1**
+t_exp1 : AND t_exp
+       | empty
 
 #### **G_EXP**
-G_EXP &rarr; M_EXP G_EXP
-G_EXP' &rarr; G_EXP'' M_EXP | empty
-G_EXP'' &rarr; -gt | -lt | -ge | -le | -eq | -ne
+g_exp : m_exp g_exp1
+
+#### **G_EXP1**
+g_exp1 : GT m_exp 
+       | LT m_exp 
+       | GE m_exp 
+       | LE m_exp 
+       | EQ m_exp 
+       | NE m_exp 
+       | empty
 
 #### **M_EXP**
-M_EXP &rarr; TERM M_EXP'
-M_EXP' &rarr; M_EXP'' M_EXP | empty
-M_EXP'' &rarr; plus | minus 
+m_exp : term m_exp1 
+
+#### **M_EXP1**
+m_exp1 : PLUS m_exp
+       | MINUS m_exp
+       | empty
+
 
 #### **TERM**
-TERM &rarr; FACTOR TERM'
-TERM' &rarr; TERM'' TERM | empty
-TERM'' &rarr;  TIMES | DIVIDE 
+term : factor term1
+
+#### **TERM1**
+term1 : TIMES term
+      | DIVIDE term
+      | empty
 
 #### **FACTOR**
-FACTOR &rarr;  lparentheses EXP rparentheses | FACTOR'
-FACTOR' &rarr; cte_i | cte_f | cte_c | VARIABLE | FUNC_CALL | empty
-
+factor : LPAREN exp RPAREN
+       | variable
+       | std_func
+       | CTE_INT
+       | CTE_FLOAT
