@@ -42,7 +42,7 @@ tokens = (
     'RCURLY',
     'LBRACKET',
     'RBRACKET',
-    'GTSYM',
+    'ARROW',
     'GT',
     'LT',
     'GE',
@@ -83,6 +83,12 @@ reserved = {
     'generate_key' : 'GENERATE_KEY',
     'encrypt' : 'ENCRYPT',
     'decrypt' : 'DECRYPT',
+    '-gt' : 'GT',
+    '-ge' : 'GE',
+    '-lt' : 'LT',
+    '-le' : 'LE',
+    '-eq' : 'EQ',
+    '-ne' : 'NE',
         }
 
 
@@ -97,13 +103,7 @@ t_PLUS =  r'\+'
 t_MINUS =  r'-'
 t_TIMES =  r'\*'
 t_DIVIDE =  r'/'
-t_GTSYM = r'>'
-t_GT = r'-gt'
-t_GE = r'-ge'
-t_LT = r'-lt'
-t_LE = r'-le'
-t_EQ = r'-eq'
-t_NE = r'-ne'
+t_ARROW = r'->'
 t_COMMA =  r','
 t_SEMICOL =  r';'
 t_CTE_CHAR = r'"[\w\d\s!?_\.:-]*"'
@@ -133,7 +133,7 @@ def t_error(t):
     t.lexer.skip(1)
 
 
-with open('Files/example.moo', 'r') as file:
+with open('Tests/example.moo', 'r') as file:
     data = file.read()
 
 
