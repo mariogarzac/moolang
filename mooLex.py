@@ -128,21 +128,25 @@ def t_newline(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
 
+def t_COMMENT(t):
+    r'\#.*'
+    pass
+    # No return value. Token discarded
+
 def t_error(t):
     print("Illegal character '%s'" % t.value[0])
     t.lexer.skip(1)
 
 
-with open('Tests/example.moo', 'r') as file:
-    data = file.read()
-
-
 lexer = lex.lex()
 
-lexer.input(data)
-while True:
-    tok = lexer.token()
-    if not tok:
-        break
-    print(tok)
-
+# with open('Tests/example.moo', 'r') as file:
+#     data = file.read()
+#
+# lexer.input(data)
+# while True:
+#     tok = lexer.token()
+#     if not tok:
+#         break
+#     print(tok)
+#
