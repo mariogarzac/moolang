@@ -98,16 +98,23 @@ t_LBRACKET=  r'\['
 t_RBRACKET =  r'\]'
 t_LCURLY=  r'\{'
 t_RCURLY =  r'\}'
+t_ARROW = r'->'
+t_COMMA =  r','
+t_SEMICOL =  r';'
+t_CTE_CHAR = r'"[\w\d\s!?_\.:-]*"'
+t_GT = r'-gt'
+t_GE = r'-ge'
+t_LT = r'-lt'
+t_LE = r'-le'
+t_EQ = r'-eq'
+t_NE = r'-ne'
 t_EQUAL =  r'='
 t_PLUS =  r'\+'
 t_MINUS =  r'-'
 t_TIMES =  r'\*'
 t_DIVIDE =  r'/'
-t_ARROW = r'->'
-t_COMMA =  r','
-t_SEMICOL =  r';'
-t_CTE_CHAR = r'"[\w\d\s!?_\.:-]*"'
 t_ignore  = ' \t'
+
 
 def t_ID(t):
     r'[a-zA-Z_][a-zA-Z_0-9]*'
@@ -139,7 +146,7 @@ def t_error(t):
 
 
 lexer = lex.lex()
-
+#
 # with open('Tests/example.moo', 'r') as file:
 #     data = file.read()
 #
