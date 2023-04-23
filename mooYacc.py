@@ -66,14 +66,19 @@ def p_sp_type(p):
 # functions
 def p_function(p):
     '''
-    function : FUNC ID LPAREN param RPAREN ARROW smp_type LCURLY function1 block RETURN exp SEMICOL RCURLY
-             | FUNC ID LPAREN param RPAREN ARROW VOID LCURLY function1 block RCURLY
+    function : FUNC ID LPAREN param RPAREN ARROW function2 LCURLY function1 block RCURLY
     '''
 
 def p_function1(p):
     '''
     function1 : dec_vars
               | empty
+    '''
+
+def p_function2(p):
+    '''
+    function2 : smp_type
+              | VOID
     '''
 
 # parameters
@@ -107,17 +112,18 @@ def p_statement(p):
               | while_loop
               | std_func
               | sp_func
+              | return_func
     '''
 
 # variable assignment 
 def p_assignment(p):
     '''
-    assignment : variable EQUAL assignment1 SEMICOL 
+    assignment : variable EQUAL assignment1 
     '''
 
 def p_assignment1(p):
     '''
-    assignment1 : exp
+    assignment1 : exp SEMICOL
                 | sp_func
     '''
 
@@ -141,7 +147,7 @@ def p_variable2(p):
 # read user input
 def p_c_input(p):
     '''
-    c_input : INPUT variable c_input1 SEMICOL
+    c_input : INPUT variable c_input1 
     '''
 
 def p_c_input1(p):
@@ -153,7 +159,7 @@ def p_c_input1(p):
 # print to console
 def p_c_print(p):
     '''
-    c_print : PRINT LPAREN c_print1 RPAREN SEMICOL
+    c_print : PRINT LPAREN c_print1 RPAREN
     '''
 
 def p_c_print1(p):
@@ -183,8 +189,15 @@ def p_condition1(p):
 # for loops
 def p_for_loop(p):
     '''
-    for_loop : FOR ID IN RANGE LPAREN exp COMMA exp RPAREN LCURLY block RCURLY
+    for_loop : FOR ID EQUAL exp IN RANGE LPAREN exp COMMA exp for_loop1 RPAREN LCURLY block RCURLY
     '''
+
+def p_for_loop1(p):
+    '''
+    for_loop1 : COMMA ID EQUAL exp
+              | empty
+    '''
+    
 
 # while loops
 def p_while_loop(p):
@@ -216,6 +229,11 @@ def p_sp_func(p):
     sp_func : generate_key_func
             | file_func
             | crypto_func
+    '''
+
+def p_return_func(p):
+    '''
+    return_func : RETURN exp SEMICOL
     '''
 
 # file functions
@@ -388,11 +406,11 @@ def p_empty(p):
 	pass
 
 def p_error(p):
-	if p is not None: 
-		print ("Illegal token %s" % (p.value))
-	else:
-		print ("Unexpected end of input")
-	exit()
+    if p:
+        # Print the line number and character position where the error occurred
+        print(f"Syntax error at line {p.lineno}, position {p.lexpos}: unexpected {p.value}")
+    else:
+        print("Syntax error: unexpected end of input")
 
 with open('Tests/example.moo', 'r') as file:
     data = file.read()
