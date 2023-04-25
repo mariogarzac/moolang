@@ -4,48 +4,48 @@ from mooLex import tokens
 # program start
 def p_prog(p):
     '''
-    prog : prog1 prog2 MAIN LPAREN RPAREN LCURLY block RCURLY 
+    prog : prog_1 prog_2 MAIN LPAREN RPAREN LCURLY block RCURLY 
     '''
 
-def p_prog1(p):
+def p_prog_1(p):
     '''
-    prog1 : dec_vars
-          | empty 
+    prog_1 : dec_vars
+           | empty 
     '''
 
-def p_prog2(p):
+def p_prog_2(p):
     '''
-    prog2 : function prog2
-          | empty 
+    prog_2 : function prog_2
+           | empty 
     '''
 
 def p_dec_vars(p):
     '''
-    dec_vars : VAR dec_vars1 
+    dec_vars : VAR dec_vars_1 
     '''
 
-def p_dec_vars1(p):
+def p_dec_vars_1(p):
     '''
-    dec_vars1 : smp_type ID LBRACKET exp RBRACKET dec_vars3 SEMICOL dec_vars4
-              | smp_type ID dec_vars2 SEMICOL dec_vars4
-              | sp_type ID dec_vars2 SEMICOL dec_vars4
+    dec_vars_1 : smp_type ID LBRACKET exp RBRACKET dec_vars_3 SEMICOL dec_vars_4
+               | smp_type ID dec_vars_2 SEMICOL dec_vars_4
+               | sp_type ID dec_vars_2 SEMICOL dec_vars_4
     '''
 
-def p_dec_vars2(p):
+def p_dec_vars_2(p):
     '''
-    dec_vars2 : COMMA ID dec_vars2
+    dec_vars_2 : COMMA ID dec_vars_2
+               | empty
+    '''
+
+def p_dec_vars_3(p):
+    '''
+    dec_vars_3 : LBRACKET exp RBRACKET
               | empty
     '''
 
-def p_dec_vars3(p):
+def p_dec_vars_4(p):
     '''
-    dec_vars3 : LBRACKET exp RBRACKET
-              | empty
-    '''
-
-def p_dec_vars4(p):
-    '''
-    dec_vars4 : dec_vars
+    dec_vars_4 : dec_vars
               | empty
     '''
 
@@ -66,32 +66,32 @@ def p_sp_type(p):
 # functions
 def p_function(p):
     '''
-    function : FUNC ID LPAREN param RPAREN ARROW function2 LCURLY function1 block RCURLY
+    function : FUNC ID LPAREN param RPAREN ARROW function_2 LCURLY function_1 block RCURLY
     '''
 
-def p_function1(p):
+def p_function_1(p):
     '''
-    function1 : dec_vars
+    function_1 : dec_vars
               | empty
     '''
 
-def p_function2(p):
+def p_function_2(p):
     '''
-    function2 : smp_type
-              | VOID
+    function_2 : smp_type
+               | VOID
     '''
 
 # parameters
 def p_param(p):
     '''
-    param : smp_type ID param1
+    param : smp_type ID param_1
           | empty
     '''
 
-def p_param1(p):
+def p_param_1(p):
     '''
-    param1 : COMMA smp_type ID param1 
-           | empty
+    param_1 : COMMA smp_type ID param_1 
+            | empty
     '''
 
 # code blocks
@@ -118,84 +118,84 @@ def p_statement(p):
 # variable assignment 
 def p_assignment(p):
     '''
-    assignment : variable EQUAL assignment1 
+    assignment : variable EQUAL assignment_1 
     '''
 
-def p_assignment1(p):
+def p_assignment_1(p):
     '''
-    assignment1 : exp SEMICOL
-                | sp_func
+    assignment_1 : exp SEMICOL
+                 | sp_func
     '''
 
 def p_variable(p):
     '''
-    variable : ID variable1 
+    variable : ID variable_1 
     '''
 
-def p_variable1(p):
+def p_variable_1(p):
     '''
-    variable1 : LBRACKET exp RBRACKET variable2
-              | empty
+    variable_1 : LBRACKET exp RBRACKET variable_2
+               | empty
     '''
 
-def p_variable2(p):
+def p_variable_2(p):
     '''
-    variable2 : LBRACKET exp RBRACKET 
-              | empty
+    variable_2 : LBRACKET exp RBRACKET 
+               | empty
     '''
 
 # read user input
 def p_c_input(p):
     '''
-    c_input : INPUT variable c_input1 
+    c_input : INPUT variable c_input_1 
     '''
 
-def p_c_input1(p):
+def p_c_input_1(p):
     '''
-    c_input1 : COMMA variable c_input1
-             | empty
+    c_input_1 : COMMA variable c_input_1
+              | empty
     '''
 
 # print to console
 def p_c_print(p):
     '''
-    c_print : PRINT LPAREN c_print1 RPAREN
+    c_print : PRINT LPAREN c_print_1 RPAREN
     '''
 
-def p_c_print1(p):
+def p_c_print_1(p):
     '''
-    c_print1 : exp c_print2 
-             | CTE_CHAR c_print2
+    c_print_1 : exp c_print_2 
+              | CTE_CHAR c_print_2
     '''
 
-def p_c_print2(p):
+def p_c_print_2(p):
     '''
-    c_print2 : COMMA c_print1
-             | empty
+    c_print_2 : COMMA c_print_1
+              | empty
     '''
 
 # conditionals 
 def p_condition(p):
     '''
-    condition : IF LPAREN exp RPAREN LCURLY block RCURLY condition1
+    condition : IF LPAREN exp RPAREN LCURLY block RCURLY condition_1
     '''
 
-def p_condition1(p):
+def p_condition_1(p):
     '''
-    condition1 : ELSE LCURLY block RCURLY
-               | empty
+    condition_1 : ELSE LCURLY block RCURLY
+                | empty
     '''
 
 # for loops
 def p_for_loop(p):
     '''
-    for_loop : FOR ID EQUAL exp IN RANGE LPAREN exp COMMA exp for_loop1 RPAREN LCURLY block RCURLY
+    for_loop : FOR ID EQUAL exp IN RANGE LPAREN exp COMMA exp for_loop_1 RPAREN LCURLY block RCURLY
     '''
 
-def p_for_loop1(p):
+def p_for_loop_1(p):
     '''
-    for_loop1 : COMMA ID EQUAL exp
-              | empty
+    for_loop_1 : COMMA ID EQUAL exp
+               | empty
     '''
     
 
@@ -208,19 +208,19 @@ def p_while_loop(p):
 # standard functions
 def p_std_func(p):
     '''
-    std_func : ID LPAREN std_func1 RPAREN 
+    std_func : ID LPAREN std_func_1 RPAREN 
     '''
 
-def p_std_func1(p):
+def p_std_func_1(p):
     '''
-    std_func1 : exp std_func2
-              | empty
+    std_func_1 : exp std_func_2
+               | empty
     '''
 
-def p_std_func2(p):
+def p_std_func_2(p):
     '''
-    std_func2 : COMMA exp std_func2
-              | empty
+    std_func_2 : COMMA exp std_func_2
+               | empty
     '''
 
 # special functions
@@ -250,7 +250,7 @@ def p_crypto_func(p):
     '''
     crypto_func : encrypt_func 
                 | decrypt_func
-                | hash_sha256 
+                | hash_sha_256 
                 | hash_md5 
     '''
 
@@ -283,110 +283,110 @@ def p_close_file(p):
 # cryptography functions
 def p_encrypt_func(p):
     '''
-    encrypt_func : ENCRYPT LPAREN encrypt_func1 COMMA ID RPAREN
+    encrypt_func : ENCRYPT LPAREN encrypt_func_1 COMMA ID RPAREN
     '''
 
-def p_encrypt_func1(p):
+def p_encrypt_func_1(p):
     '''
-    encrypt_func1 : CTE_CHAR
+    encrypt_func_1 : CTE_CHAR
                   | ID
     '''
 
 def p_decrypt_func(p):
     '''
-    decrypt_func : DECRYPT LPAREN decrypt_func1 COMMA ID RPAREN
+    decrypt_func : DECRYPT LPAREN decrypt_func_1 COMMA ID RPAREN
     '''
 
-def p_decrypt_func1(p):
+def p_decrypt_func_1(p):
     '''
-    decrypt_func1 : CTE_CHAR
-                  | ID
-    '''
-
-def p_hash_sha256(p):
-    '''
-    hash_sha256 : HASH_SHA256 LPAREN hash_sha2561 RPAREN
+    decrypt_func_1 : CTE_CHAR
+                   | ID
     '''
 
-def p_hash_sha2561(p):
+def p_hash_sha_256(p):
     '''
-    hash_sha2561 : CTE_CHAR
-                 | ID
+    hash_sha_256 : HASH_SHA256 LPAREN hash_sha_256_1 RPAREN
+    '''
+
+def p_hash_sha_256_1(p):
+    '''
+    hash_sha_256_1 : CTE_CHAR
+                   | ID
     '''
 
 def p_hash_md5(p):
     '''
-    hash_md5 : HASH_MD5 LPAREN hash_md51 RPAREN
+    hash_md5 : HASH_MD5 LPAREN hash_md5_1 RPAREN
     '''
 
-def p_hash_md51(p):
+def p_hash_md5_1(p):
     '''
-    hash_md51 : CTE_CHAR
-              | ID
+    hash_md5_1 : CTE_CHAR
+               | ID
     '''
 
 # expressions
 def p_exp(p):
     '''
-    exp : t_exp exp1
+    exp : t_exp exp_1
     '''
 
-def p_exp1(p):
+def p_exp_1(p):
     '''
-    exp1 : OR exp
+    exp_1 : OR exp
          | empty
     '''
 
 def p_t_exp(p):
     '''
-    t_exp : g_exp t_exp1
+    t_exp : g_exp t_exp_1
     '''
 
-def p_t_exp1(p):
+def p_t_exp_1(p):
     '''
-    t_exp1 : AND t_exp
-           | empty
+    t_exp_1 : AND t_exp
+            | empty
     '''
 
 def p_g_exp(p):
     '''
-    g_exp : m_exp g_exp1
+    g_exp : m_exp g_exp_1
     '''
 
-def p_g_exp1(p):
+def p_g_exp_1(p):
     '''
-    g_exp1 : GT m_exp 
-           | LT m_exp 
-           | GE m_exp 
-           | LE m_exp 
-           | EQ m_exp 
-           | NE m_exp 
-           | empty
+    g_exp_1 : GT m_exp 
+            | LT m_exp 
+            | GE m_exp 
+            | LE m_exp 
+            | EQ m_exp 
+            | NE m_exp 
+            | empty
     '''
 
 def p_m_exp(p):
     '''
-    m_exp : term m_exp1 
+    m_exp : term m_exp_1 
     '''
 
-def p_m_exp1(p):
+def p_m_exp_1(p):
     '''
-    m_exp1 : PLUS m_exp
-           | MINUS m_exp
-           | empty
+    m_exp_1 : PLUS m_exp
+            | MINUS m_exp
+            | empty
     '''
 
 
 def p_term(p):
     '''
-    term : factor term1
+    term : factor term_1
     '''
 
-def p_term1(p):
+def p_term_1(p):
     '''
-    term1 : TIMES term
-          | DIVIDE term
-          | empty
+    term_1 : TIMES term
+           | DIVIDE term
+           | empty
     '''
 
 def p_factor(p):
