@@ -1,6 +1,10 @@
 import ply.yacc as yacc
 from mooLex import tokens 
 
+################################
+######### Syntax Rules ######### 
+################################
+
 # program start
 def p_prog(p):
     '''
@@ -19,6 +23,7 @@ def p_prog_2(p):
            | empty 
     '''
 
+# variable declaration
 def p_dec_vars(p):
     '''
     dec_vars : VAR dec_vars_1 
@@ -127,6 +132,7 @@ def p_assignment_1(p):
                  | sp_func
     '''
 
+# accesing variables
 def p_variable(p):
     '''
     variable : ID variable_1 
@@ -231,6 +237,7 @@ def p_sp_func(p):
             | crypto_func
     '''
 
+# return for functions
 def p_return_func(p):
     '''
     return_func : RETURN exp SEMICOL
@@ -376,7 +383,6 @@ def p_m_exp_1(p):
             | empty
     '''
 
-
 def p_term(p):
     '''
     term : factor term_1
@@ -399,6 +405,15 @@ def p_factor(p):
        
     '''
 
+################################
+####### Neuralgic Points ####### 
+################################
+
+
+
+################################
+######## Empty && Error ######## 
+################################
 def p_empty(p):
 	'''
 	empty : 
