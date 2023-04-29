@@ -1,142 +1,164 @@
 
 '''
 TODO: Revisar cubo con la maestra
-- asingaciones
-- char
-- bools
+ - asingaciones
+ - char
+ - bools
+
+
+int   1
+float 2
+char  3
+bool  4
++     5
+-     6
+*     7
+/     8
+=     9
+gt    10
+ge    11
+lt    12
+le    13
+eq    14
+ne    15
+GOTO  16
+GOTOF 17
+GOTOV 18
+
 '''
 
+
 CUBE = {
-        'int': {
-            'int' : {
-                '+':    'int',
-                '-':    'int',
-                '*':    'int',
-                '/':    'int',
-                '=':    'int',
-                '-gt':  'bool',
-                '-ge':  'bool',
-                '-lt':  'bool',
-                '-le':  'bool',
-                '-eq':  'bool',
-                '-ne':  'bool',
+        1: {
+            1 : {
+                5:   1,
+                6:   1,
+                7:   1,
+                8:   1,
+                9:   1,
+                10:  4,
+                11:  4,
+                12:  4,
+                13:  4,
+                14:  4,
+                15:  4,
             }, 
 
-            'float': {
-                '+':    'float',
-                '-':    'float',
-                '*':    'float',
-                '/':    'float',
-                '=':    'float',
-                '-gt':  'bool',
-                '-ge':  'bool',
-                '-lt':  'bool',
-                '-le':  'bool',
-                '-eq':  'bool',
-                '-ne':  'bool',
+            2: {
+                5:   2,
+                6:   2,
+                7:   2,
+                8:   2,
+                9:   2,
+                10:  4,
+                11:  4,
+                12:  4,
+                13:  4,
+                14:  4,
+                15:  4,
                   },
 
-            'char': {
-                '+':    'char',
-                '-':    'char',
-                '*':    'char',
-                '/':    'char',
-                '=':    'char',
-                '-gt':  'bool',
-                '-ge':  'bool',
-                '-lt':  'bool',
-                '-le':  'bool',
-                '-eq':  'bool',
-                '-ne':  'bool',
+            3: {
+                5:   3,
+                6:   3,
+                7:   3,
+                8:   3,
+                9:   3,
+                10:  4,
+                11:  4,
+                12:  4,
+                13:  4,
+                14:  4,
+                15:  4,
             }
         }, # int
 
-        'float': {
-            'int' : {
-                '+':    'float',
-                '-':    'float',
-                '*':    'float',
-                '/':    'float',
-                '=':    'float',
-                '-gt':  'bool',
-                '-ge':  'bool',
-                '-lt':  'bool',
-                '-le':  'bool',
-                '-eq':  'bool',
-                '-ne':  'bool',
+        2: {
+            1 : {
+                5:   2,
+                6:   2,
+                7:   2,
+                8:   2,
+                9:   2,
+                10:  4,
+                11:  4,
+                12:  4,
+                13:  4,
+                14:  4,
+                15:  4,
             },
 
-            'float': {
-                '+':    'float',
-                '-':    'float',
-                '*':    'float',
-                '/':    'float',
-                '=':    'float',
-                '-gt':  'bool',
-                '-ge':  'bool',
-                '-lt':  'bool',
-                '-le':  'bool',
-                '-eq':  'bool',
-                '-ne':  'bool',
+            2: {
+                5:   2,
+                6:   2,
+                7:   2,
+                8:   2,
+                9:   2,
+                10:  4,
+                11:  4,
+                12:  4,
+                13:  4,
+                14:  4,
+                15:  4,
             },
 
-            'char': {
-                '+':    'char',
-                '-':    'char',
-                '*':    'char',
-                '/':    'char',
-                '=':    'char',
-                '-gt':  'bool',
-                '-ge':  'bool',
-                '-lt':  'bool',
-                '-le':  'bool',
-                '-eq':  'bool',
-                '-ne':  'bool',
+            3: {
+                5:   3,
+                6:   3,
+                7:   3,
+                8:   3,
+                9:   3,
+                10:  4,
+                11:  4,
+                12:  4,
+                13:  4,
+                14:  4,
+                15:  4,
             },
 
        }, # float
 
-        'char' : {
-            'int' : {
-                '+':    'char',
-                '-':    'char',
-                '*':    'char',
-                '/':    'char',
-                '=':    'char',
-                '-gt':  'bool',
-                '-ge':  'bool',
-                '-lt':  'bool',
-                '-le':  'bool',
-                '-eq':  'bool',
-                '-ne':  'bool',
+        3 : {
+            1 : {
+                5:   3,
+                6:   3,
+                7:   3,
+                8:   3,
+                9:   3,
+                10:  4,
+                11:  4,
+                12:  4,
+                13:  4,
+                14:  4,
+                15:  4,
             },
 
-            'float': {
-                '+':    'char',
-                '-':    'char',
-                '*':    'char',
-                '/':    'char',
-                '=':    'char',
-                '-gt':  'bool',
-                '-ge':  'bool',
-                '-lt':  'bool',
-                '-le':  'bool',
-                '-eq':  'bool',
-                '-ne':  'bool',
+            2: {
+                5:   3,
+                6:   3,
+                7:   3,
+                8:   3,
+                9:   3,
+                10:  4,
+                11:  4,
+                12:  4,
+                13:  4,
+                14:  4,
+                15:  4,
             },
 
-            'char': {
-                '+':    'char',
-                '-':    'char',
-                '*':    'char',
-                '/':    'char',
-                '=':    'char',
-                '-gt':  'bool',
-                '-ge':  'bool',
-                '-lt':  'bool',
-                '-le':  'bool',
-                '-eq':  'bool',
-                '-ne':  'bool',
+            3: {
+                5:   3,
+                6:   3,
+                7:   3,
+                8:   3,
+                9:   3,
+                10:  4,
+                11:  4,
+                12:  4,
+                13:  4,
+                14:  4,
+                15:  4,
             }
 
        } # char
