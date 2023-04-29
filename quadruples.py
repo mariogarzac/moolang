@@ -12,8 +12,6 @@ class Quadruple:
         self.rightOperand = rightOperand
         self.temp = temp
 
-        
-
     def printContents(self):
         print(f"contents: {self.operator} ,{self.leftOperand} ,{self.rightOperand} ,{self.temp}")
 
@@ -31,9 +29,11 @@ class QuadrupleTable:
         self.temp = 0
     
     # <INSERT INTO STACK>
-    def insertNewIdAndType(self, newType, newId):
-        self.typeStack.append(newType)
+    def insertNewId(self, newId):
         self.operandStack.append(newId)
+
+    def insertNewType(self, newType):
+        self.typeStack.append(newType)
 
     def insertOperator(self, newOp):
         self.operatorStack.append(newOp)
@@ -95,14 +95,3 @@ class QuadrupleTable:
 
         self.quadPointer += 1
 
-
-q = QuadrupleTable()
-
-q.insertNewIdAndType('int', 'x')
-q.insertOperator('+')
-q.insertNewIdAndType('int', 's')
-print(q.typeStack)
-print(q.operandStack)
-print(q.operatorStack)
-q.generateQuad()
-q.printTheQuads()
