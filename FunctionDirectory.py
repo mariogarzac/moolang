@@ -11,6 +11,9 @@ TODO:
 class Variable:
     def __init__ (self):
         self.varAttributes = {}
+   
+    def getVar(self):
+        return self.varAttributes
 
     def addVar(self, varId, varType, varScope, varValue, varXDims = None, varYDims = None):
         self.varAttributes[varId] = {}
@@ -20,10 +23,8 @@ class Variable:
         self.varAttributes[varId]["varXDims"] = varXDims
         self.varAttributes[varId]["varYDims"] = varYDims
         return self.varAttributes
-
-    def getVars(self):
-        return self.varAttributes
-
+    
+    
     def printVars(self):
         pretty = json.dumps(self.varAttributes, indent=4)
         print(pretty)
@@ -56,32 +57,29 @@ class FunctionDirectory:
     def addParams(self, paramId, paramType): 
         self.funcDirectory[self.funcCounter]["funcParams"].update(paramId, paramType)
 
-    def addVariable(self, var): # varType, varScope, varValue, varXDims = None, varYDims = None
-        self.funcDirectory[self.funcCounter]["funcVars"] = var
+    def addVariable(self, newVar):
+        self.funcDirectory[self.funcCounter]["funcVars"].update(newVar)
+        # self.funcDirectory[self.funcCounter]["funcVars"]= howdy[varId]
+        # self.funcDirectory[self.funcCounter]["funcVars"][varId]["varType"] =  howdy[varId]
+        # self.funcDirectory[self.funcCounter]["funcVars"][varId]["varScope"] = howdy[varId][varScope]
+        # self.funcDirectory[self.funcCounter]["funcVars"][varId]["varValue"] = howdy[varId][varValue]
+        # self.funcDirectory[self.funcCounter]["funcVars"][varId]["varXDims"] = howdy[varId][varXDims]
+        # self.funcDirectory[self.funcCounter]["funcVars"][varId]["varYDims"] = howdy[varId][varYDims]
         return self.funcDirectory
 
-        # self.funcDirectory[funcCounter][funcVars].update(varId) 
-        # return vars.addVar(varId, varType, varScope, varValue, varXDims, varYDims)
-
     def printFuncDir(self):
-        # pretty = json.dumps(self.funcDirectory, indent=4)
-        # print(pretty)
         p.pprint(self.funcDirectory)
 
 
 vars = Variable()
 funcs = FunctionDirectory()
-funcs.addVariable(vars.addVar(1,2,3,4))
-vars.addVar(5,6,7,8)
-vars.addVar(9,10,11,12)
-funcs.addFunc("func1", "int", None, vars.getVars())
+tmp = vars.addVar("hello",1,20,4, None, None)
+funcs.addVariable(tmp)
 funcs.printFuncDir()
 
-        # self.varAttributes.update({varId :
-        #                         {"varType" : varType ,
-        #                          "varScope" : varScope,
-        #                          "varValue" : varValue,
-        #                          "varXDims" : varXDims,
-        #                          "varYDims" : varYDims,
-        #                         }
-        #                      })
+
+
+
+
+# funcs.addVariable("howdy",1,20,4, None, None)
+# funcs.addVariable("greetings",1,20,4, None, None)
