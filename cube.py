@@ -6,6 +6,7 @@ TODO: Revisar cubo con la maestra
  - bools
 
 
+void  0
 int   1
 float 2
 char  3
