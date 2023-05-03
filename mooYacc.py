@@ -1,5 +1,66 @@
 import ply.yacc as yacc
 from mooLex import tokens 
+from quadruples import QuadrupleTable 
+from FunctionDirectory import FunctionDirectory as FD
+from FunctionDirectory import Variable as V
+
+
+################################
+######## Global Variables ######
+################################
+currId = ""
+currType = 1
+currScope = 21
+currXDims = 0
+currYDims = 0
+tmpDims = 0
+counter = 0
+
+quads = QuadrupleTable()
+V = V()
+FD = FD()
+
+################################
+######## Convert Strings #######
+################################
+
+CONV = {
+    'void':          0,
+    'int':           1,
+    'float':         2,
+    'char':          3,
+    'file':          5,
+    'bool':          5,
+    '+':             6,
+    '-':             7,
+    '*':             8,
+    '/':             9,
+    '=':             10,
+    'gt':            11,
+    'ge':            12,
+    'lt':            13,
+    'le':            14,
+    'eq':            15,
+    'ne':            16,
+    'and':           17,
+    'or':            17,
+    'GOTO':          18,
+    'GOTOF':         19,
+    'GOTOV':         20,
+    'local':         21,
+    'global':        22,
+    'open' :         25, 
+    'read' :         26, 
+    'write'  :       27, 
+    'close' :        28,
+    'encrypt' :      29,
+    'decrypt' :      30,
+    'hash_md5' :     31,
+    'hash_sha256' :  32, 
+    'generate_key':  34
+    }
+
+
 
 ################################
 ######### Syntax Rules ######### 
@@ -13,7 +74,7 @@ def p_prog(p):
 
 def p_prog_1(p):
     '''
-    prog_1 : dec_vars
+    prog_1 : dec_vars 
            | empty 
     '''
 
@@ -31,27 +92,27 @@ def p_dec_vars(p):
 
 def p_dec_vars_1(p):
     '''
-    dec_vars_1 : smp_type ID LBRACKET exp RBRACKET dec_vars_3 SEMICOL dec_vars_4
-               | smp_type ID dec_vars_2 SEMICOL dec_vars_4
-               | sp_type ID dec_vars_2 SEMICOL dec_vars_4
+    dec_vars_1 : smp_type ID get_id LBRACKET CTE_INT get_xdims RBRACKET dec_vars_3 add_variable reset_dims  SEMICOL dec_vars_4
+               | smp_type ID get_id add_variable dec_vars_2 SEMICOL add_variable dec_vars_4
+               | sp_type ID get_id dec_vars_2 SEMICOL add_variable dec_vars_4
     '''
 
 def p_dec_vars_2(p):
     '''
-    dec_vars_2 : COMMA ID dec_vars_2
+    dec_vars_2 : COMMA ID get_id add_variable dec_vars_2 
                | empty
     '''
 
 def p_dec_vars_3(p):
     '''
-    dec_vars_3 : LBRACKET exp RBRACKET
-              | empty
+    dec_vars_3 : LBRACKET CTE_INT get_ydims RBRACKET
+               | empty
     '''
 
 def p_dec_vars_4(p):
     '''
     dec_vars_4 : dec_vars
-              | empty
+               | empty
     '''
 
 # simple type variables
@@ -61,23 +122,27 @@ def p_smp_type(p):
              | FLOAT
              | CHAR
     '''
+    global currType
+    currType = CONV[p[1]]
 
 # special type variable
 def p_sp_type(p):
     '''
     sp_type : FILE
     '''
+    global currType
+    currType = CONV[p[1]]
 
 # functions
 def p_function(p):
     '''
-    function : FUNC ID LPAREN param RPAREN ARROW function_2 LCURLY function_1 block RCURLY
+    function : FUNC ID get_id LPAREN param RPAREN ARROW function_2 create_func LCURLY function_1 block RCURLY
     '''
 
 def p_function_1(p):
     '''
-    function_1 : dec_vars
-              | empty
+    function_1 : set_scope dec_vars 
+               | empty
     '''
 
 def p_function_2(p):
@@ -85,17 +150,22 @@ def p_function_2(p):
     function_2 : smp_type
                | VOID
     '''
+    global currType
+    if (currType == 'void'):
+        currType = CONV[p[1]]
+    else:
+        pass
 
 # parameters
 def p_param(p):
     '''
-    param : smp_type ID param_1
+    param : smp_type ID get_id add_param param_1
           | empty
     '''
 
 def p_param_1(p):
     '''
-    param_1 : COMMA smp_type ID param_1 
+    param_1 : COMMA smp_type ID get_id add_param param_1 
             | empty
     '''
 
@@ -263,46 +333,55 @@ def p_crypto_func(p):
 
 def p_generate_key_func(p):
     '''
-    generate_key_func : GENERATE_KEY LPAREN RPAREN 
+    generate_key_func : GENERATE_KEY insert_sp_func LPAREN RPAREN 
     '''
-
+#add_variable
 # file manipulation
 def p_open_file(p):
     '''
-    open_file : OPEN LPAREN CTE_CHAR RPAREN
+    open_file : OPEN insert_sp_func LPAREN CTE_CHAR RPAREN
     '''
 
 def p_read_file(p):
     '''
-    read_file : READ LPAREN ID RPAREN 
+    read_file : READ insert_sp_func LPAREN ID RPAREN 
     '''
 
 def p_write_file(p):
     '''
-    write_file : WRITE LPAREN CTE_CHAR ID RPAREN
+    write_file : WRITE insert_sp_func LPAREN CTE_CHAR ID RPAREN
     '''
 
 def p_close_file(p):
     '''
-    close_file : CLOSE LPAREN ID RPAREN
+    close_file : CLOSE insert_sp_func LPAREN ID RPAREN
     '''
 
 # cryptography functions
 def p_encrypt_func(p):
     '''
-    encrypt_func : ENCRYPT LPAREN encrypt_func_1 COMMA ID RPAREN
+    encrypt_func : ENCRYPT insert_sp_func LPAREN encrypt_func_1 COMMA ID RPAREN
     '''
+    # global currId, currType 
+    # currId = CONV[p[1]]
+    # currType = -1
 
 def p_encrypt_func_1(p):
     '''
     encrypt_func_1 : CTE_CHAR
-                  | ID
+                   | ID
     '''
+    # global currId, currType 
+    # currId = CONV[p[1]]
+    # currType = -1
 
 def p_decrypt_func(p):
     '''
     decrypt_func : DECRYPT LPAREN decrypt_func_1 COMMA ID RPAREN
     '''
+    # global currId, currType 
+    # currId = CONV[p[1]]
+    # currType = -1
 
 def p_decrypt_func_1(p):
     '''
@@ -340,7 +419,7 @@ def p_exp(p):
 
 def p_exp_1(p):
     '''
-    exp_1 : OR exp
+    exp_1 : OR push_to_operator_stack exp
          | empty
     '''
 
@@ -351,7 +430,7 @@ def p_t_exp(p):
 
 def p_t_exp_1(p):
     '''
-    t_exp_1 : AND t_exp
+    t_exp_1 : AND push_to_operator_stack t_exp
             | empty
     '''
 
@@ -362,12 +441,12 @@ def p_g_exp(p):
 
 def p_g_exp_1(p):
     '''
-    g_exp_1 : GT m_exp 
-            | LT m_exp 
-            | GE m_exp 
-            | LE m_exp 
-            | EQ m_exp 
-            | NE m_exp 
+    g_exp_1 : GT push_to_operator_stack m_exp 
+            | LT push_to_operator_stack m_exp 
+            | GE push_to_operator_stack m_exp 
+            | LE push_to_operator_stack m_exp 
+            | EQ push_to_operator_stack m_exp 
+            | NE push_to_operator_stack m_exp 
             | empty
     '''
 
@@ -378,8 +457,8 @@ def p_m_exp(p):
 
 def p_m_exp_1(p):
     '''
-    m_exp_1 : PLUS m_exp
-            | MINUS m_exp
+    m_exp_1 : PLUS push_to_operator_stack m_exp
+            | MINUS push_to_operator_stack m_exp
             | empty
     '''
 
@@ -390,26 +469,105 @@ def p_term(p):
 
 def p_term_1(p):
     '''
-    term_1 : TIMES term
-           | DIVIDE term
+    term_1 : TIMES push_to_operator_stack term
+           | DIVIDE push_to_operator_stack term
            | empty
     '''
 
 def p_factor(p):
     '''
-    factor : LPAREN exp RPAREN
-           | variable
-           | std_func
-           | CTE_INT
-           | CTE_FLOAT
+    factor : LPAREN exp RPAREN push_to_operand_stack
+           | variable push_to_operand_stack
+           | std_func push_to_operand_stack
+           | CTE_INT push_to_operand_stack
+           | CTE_FLOAT push_to_operand_stack
        
     '''
 
 ################################
 ####### Neuralgic Points ####### 
 ################################
+def p_set_scope(p):
+    '''
+    set_scope : empty
+    '''
+    global currScope
+    currScope = 20
+
+def p_get_id(p):
+    '''
+    get_id : empty
+    '''
+    global currId, currScope, currType
+    currId = p[-1]
+    quads.insertNewOperand(currId)
+
+def p_get_xdims(p):
+    '''
+    get_xdims : empty
+    '''
+    global currXDims
+    currXDims = p[-1]
+
+def p_get_ydims(p):
+    '''
+    get_ydims : empty
+    '''
+    global currYDims
+    currYDims = p[-1]
+
+def p_reset_dims(p):
+    '''
+    reset_dims : empty
+    '''
+    global currXDims, currYDims
+    currXDims = 0
+    currYDims = 0
 
 
+def p_insert_sp_func(p):
+    '''
+    insert_sp_func : empty
+    '''
+    global currId
+    currId = p[-1]
+    quads.insertNewId(currId)
+
+def p_create_func(p):
+    '''
+    create_func : empty
+    '''
+    global currId, currType
+    FD.addFunc(currId, currType)
+
+def p_add_param(p):
+    '''
+    add_param : empty
+    '''
+    global  currId, currType
+    FD.addParam(currId,currType)
+
+def p_add_variable(p):
+    '''
+    add_variable : empty
+    '''
+    #quads.printStacks()
+    global currType, currId, currScope, currXDims, currYDims
+    tmpVar = V.addVar(currId, currType, currScope, 0, currXDims, currYDims)
+    FD.addVariable(tmpVar)
+
+def p_push_to_operator_stack(p):
+    '''
+    push_to_operator_stack : empty
+    '''
+    print("operator ",p[-1])
+    # quads.insertNewOperator(p[1])
+
+def p_push_to_operand_stack(p):
+    '''
+    push_to_operand_stack : empty
+    '''
+    print("operand ", p[-1])
 
 ################################
 ######## Empty && Error ######## 
@@ -427,10 +585,13 @@ def p_error(p):
     else:
         print("Syntax error: unexpected end of input")
 
-with open('Tests/example.moo', 'r') as file:
+
+################################
+######## Testing && Run ######## 
+################################
+with open('Tests/simple.moo', 'r') as file:
     data = file.read()
 
 parser = yacc.yacc()
 result = parser.parse(data)
-
-
+# FD.printFuncDir()
