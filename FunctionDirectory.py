@@ -12,19 +12,14 @@ class Variable:
     def __init__ (self):
         self.varAttributes = {}
 
-    def addVar(self, varId, varType, varScope, varValue, varXDims = None, varYDims = None):
-        self.varAttributes = {varId :{"varType" : varType, "varScope" : varScope, "varValue" : varValue,\
-                "varXDims" : varXDims , "varYDims" : varYDims}}
+    def addVar(self, varId, varType, varScope, varValue, varXDims = 0 , varYDims = 0):
+        self.varAttributes = {varId :{"vType" : varType, "vScope" : varScope, "vValue" : varValue,\
+                "vXDims" : varXDims , "vYDims" : varYDims}}
 
-        # #self.funcDirectory[self.funcCounter]["funcVars"]= {}
-        # self.varAttributes = {}
-        # self.varAttributes[varId] = {}
-        # self.varAttributes[varId]["varType"] = varType
-        # self.varAttributes[varId]["varScope"] = varScope
-        # self.varAttributes[varId]["varValue"] = varValue
-        # self.varAttributes[varId]["varXDims"] = varXDims
-        # self.varAttributes[varId]["varYDims"] = varYDims
         return self.varAttributes
+
+    def printVars(self):
+        print(self.varAttributes)
 
 class FunctionDirectory:
 
@@ -33,26 +28,34 @@ class FunctionDirectory:
         # since functions will be addressed by number instead of name,
         # we start at 0
         self.funcCounter = 0
-        self.funcDirectory = {self.funcCounter: { "funcType" : 0, "funcParams": {}, "funcVars" : {} } }
+        self.funcDirectory = {self.funcCounter: {"fName": 0, "fType" : 0, "fParams": {}, "fVars" : {} } }
 
-    def addFunc(self, funcId, funcType, funcParams = None, funcVars = None):
+    def addFunc(self, funcId, funcType):
         # funcParams is a dictionary
         # funcVars is a dictionary
         self.funcCounter += 1
 
         self.funcDirectory[self.funcCounter] = {}
-        self.funcDirectory[self.funcCounter]["funcType"] = funcType
-        self.funcDirectory[self.funcCounter]["funcParams"] = funcParams
-        self.funcDirectory[self.funcCounter]["funcVars"] = funcVars
+        self.funcDirectory[self.funcCounter]["fName"] = funcId
+        self.funcDirectory[self.funcCounter]["fType"] = funcType
+        self.funcDirectory[self.funcCounter]["fParams"] = {}
+        self.funcDirectory[self.funcCounter]["fVars"] = {}
 
-    def addParams(self, paramId, paramType): 
-        self.funcDirectory[self.funcCounter]["funcParams"].update(paramId, paramType)
+    def addParam(self, paramId, paramType): 
+        self.funcDirectory[self.funcCounter]["fParams"].update({paramId : paramType})
 
     def addVariable(self, newVar):
         varId = list(newVar.keys())[0]
-        self.funcDirectory[self.funcCounter]["funcVars"][varId] = {}
-        self.funcDirectory[self.funcCounter]["funcVars"][varId].update(newVar[varId])
+        self.funcDirectory[self.funcCounter]["fVars"][varId] = {}
+        self.funcDirectory[self.funcCounter]["fVars"][varId].update(newVar[varId])
         return self.funcDirectory
 
+    def assignValue(self,varId, value):
+        self.funcDirectory[self.funcCounter]["fVars"][str(varId)]["vValue"] = value
+
+    def getVarType(self, varId):
+        id = str(varId)
+        return self.funcDirectory[self.funcCounter]["fVars"][id]["vType"]
+
     def printFuncDir(self):
-        p.pprint(self.funcDirectory)
+        print(json.dumps(self.funcDirectory, indent=4, sort_keys=False))
