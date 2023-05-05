@@ -27,13 +27,11 @@ class QuadrupleTable:
         self.quads = []
         self.quadPointer = 1
         self.temp = 0
-    
-    # <INSERT INTO STACK>
-    def insertNewId(self, newId):
-        self.operandStack.append(newId)
 
-    def insertNewType(self, newType):
+    # <INSERT INTO STACK>
+    def insertOpAndType(self,newOperand, newType):
         self.typeStack.append(newType)
+        self.operandStack.append(newOperand)
 
     def insertOperator(self, newOp):
         self.operatorStack.append(newOp)
@@ -68,30 +66,80 @@ class QuadrupleTable:
         return quadPointer
 
     def printTheQuads(self):
-        self.quads[0].printContents()
+        for i in range(0, len(self.quads)):
+            print(self.quads[i].printContents())
 
     def checkTypeMismatch(self, leftType, rightType, operator):
         try:
             if (CUBE[leftType][rightType][operator]):
-                print("Types are valid")
                 return CUBE[leftType][rightType][operator]
         except:
             print("ERROR: TypeMismatch")
             exit()
 
+    def printStacks(self):
+        print("TYPESTACK ", self.typeStack)
+        print("OPERANDSTACK ", self.operandStack)
+        print("OPERATORSTACK ", self.operatorStack)
+        print("\n")
+
+
+    def popParen(self):
+        try:
+            self.operatorStack.pop(self.operatorStack.index(10))
+            self.typeStack.pop(self.typeStack.index(0))
+        except ValueError:
+            print("Not Found")
+
+    def checkPending(self, op1, op2):
+        length = len(self.operatorStack)
+        for i in range(0, length - 1):
+            if (self.operatorStack[i] == op1 or self.operatorStack[i] == op2):
+                tmpPop = self.operatorStack.pop(i) 
+                self.insertOperator(tmpPop)
+                return
+    
+
     # <HIT THE QUADS>
     def generateQuad(self):
-        leftType = self.popType()
-        leftOperand = self.popOperand()
-
-        rightType = self.popType()
-        rightOperand = self.popOperand()
 
         operator = self.popOperator()
+        rightType = self.popType()
+        leftType = self.popType()
 
-        self.checkTypeMismatch(leftType, rightType, operator)
-        
-        self.quads.append(Quadruple(operator, leftOperand, rightOperand, self.temp))
+        resType = self.checkTypeMismatch(leftType, rightType, operator)
+
+        if (operator < 10):
+            rightOperand = self.popOperand()
+            leftOperand = self.popOperand()
+            if (operator == 6):
+                operator = '+'
+                self.temp = leftOperand + rightOperand
+            elif(operator == 7) :
+                operator = '-'
+                self.temp = leftOperand - rightOperand
+            elif(operator == 8) :
+                operator = '*'
+                self.temp = leftOperand * rightOperand
+            elif(operator == 9) :
+                operator = '/'
+                self.temp = leftOperand / rightOperand
+
+            self.quads.append(Quadruple(operator, leftOperand, rightOperand, self.temp))
+            self.insertOpAndType(self.temp, resType)
+            print(operator, leftOperand, rightOperand, self.temp)
+
+        else:
+            if (operator == 12) :
+                # Pop them to generate quad
+                res = self.popOperand()
+                operand = self.popOperand()
+
+                # Reinsert them to add to variable
+                self.insertOpAndType(operand, rightType)
+                self.insertOpAndType(res, leftType)
+
+                operator = '='
 
         self.quadPointer += 1
 
