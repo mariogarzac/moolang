@@ -146,8 +146,8 @@ def t_error(t):
 
 
 lexer = lex.lex()
-#
-# with open('Tests/example.moo', 'r') as file:
+
+# with open('Tests/simple.moo', 'r') as file:
 #     data = file.read()
 #
 # lexer.input(data)
