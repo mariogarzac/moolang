@@ -15,6 +15,7 @@ currXDims = 0
 currYDims = 0
 tmpDims = 0
 counter = 0
+solve = True
 
 quads = QuadrupleTable()
 V = V()
@@ -35,28 +36,30 @@ CONV = {
     '-':             7,
     '*':             8,
     '/':             9,
-    '=':             10,
-    'gt':            11,
-    'ge':            12,
-    'lt':            13,
-    'le':            14,
-    'eq':            15,
-    'ne':            16,
-    'and':           17,
-    'or':            17,
-    'GOTO':          18,
-    'GOTOF':         19,
-    'GOTOV':         20,
-    'local':         21,
-    'global':        22,
-    'open' :         25, 
-    'read' :         26, 
-    'write'  :       27, 
-    'close' :        28,
-    'encrypt' :      29,
-    'decrypt' :      30,
-    'hash_md5' :     31,
-    'hash_sha256' :  32, 
+    '(':             10,
+    ')':             11,
+    '=':             12,
+    '-gt':           13,
+    '-ge':           14,
+    '-lt':           15,
+    '-le':           16,
+    '-eq':           17,
+    '-ne':           18,
+    'and':           19,
+    'or':            20,
+    'GOTO':          21,
+    'GOTOF':         22,
+    'GOTOV':         23,
+    'local':         24,
+    'global':        25,
+    'open' :         26, 
+    'read' :         27, 
+    'write'  :       28, 
+    'close' :        29,
+    'encrypt' :      30,
+    'decrypt' :      31,
+    'hash_md5' :     32,
+    'hash_sha256' :  33, 
     'generate_key':  34
     }
 
@@ -193,7 +196,7 @@ def p_statement(p):
 # variable assignment 
 def p_assignment(p):
     '''
-    assignment : variable EQUAL assignment_1 
+    assignment : variable EQUAL push_to_operator_stack assignment_1 
     '''
 
 def p_assignment_1(p):
@@ -201,12 +204,17 @@ def p_assignment_1(p):
     assignment_1 : exp SEMICOL
                  | sp_func
     '''
+    quads.generateQuad()
+    value = quads.popOperand()
+    id = quads.popOperand()
+    FD.assignValue(id, value)
 
 # accesing variables
 def p_variable(p):
     '''
     variable : ID variable_1 
     '''
+    quads.insertOpAndType(p[1],FD.getVarType(p[1]))
 
 def p_variable_1(p):
     '''
@@ -273,7 +281,7 @@ def p_for_loop_1(p):
     for_loop_1 : COMMA ID EQUAL exp
                | empty
     '''
-    
+
 
 # while loops
 def p_while_loop(p):
@@ -335,7 +343,7 @@ def p_generate_key_func(p):
     '''
     generate_key_func : GENERATE_KEY insert_sp_func LPAREN RPAREN 
     '''
-#add_variable
+
 # file manipulation
 def p_open_file(p):
     '''
@@ -362,26 +370,17 @@ def p_encrypt_func(p):
     '''
     encrypt_func : ENCRYPT insert_sp_func LPAREN encrypt_func_1 COMMA ID RPAREN
     '''
-    # global currId, currType 
-    # currId = CONV[p[1]]
-    # currType = -1
 
 def p_encrypt_func_1(p):
     '''
     encrypt_func_1 : CTE_CHAR
                    | ID
     '''
-    # global currId, currType 
-    # currId = CONV[p[1]]
-    # currType = -1
 
 def p_decrypt_func(p):
     '''
     decrypt_func : DECRYPT LPAREN decrypt_func_1 COMMA ID RPAREN
     '''
-    # global currId, currType 
-    # currId = CONV[p[1]]
-    # currType = -1
 
 def p_decrypt_func_1(p):
     '''
@@ -414,18 +413,18 @@ def p_hash_md5_1(p):
 # expressions
 def p_exp(p):
     '''
-    exp : t_exp exp_1
+    exp : t_exp exp_1  solve_exp 
     '''
 
 def p_exp_1(p):
     '''
     exp_1 : OR push_to_operator_stack exp
-         | empty
+          | empty
     '''
 
 def p_t_exp(p):
     '''
-    t_exp : g_exp t_exp_1
+    t_exp : g_exp t_exp_1 solve_t_exp 
     '''
 
 def p_t_exp_1(p):
@@ -434,9 +433,10 @@ def p_t_exp_1(p):
             | empty
     '''
 
+# TODO THIS G_EXP
 def p_g_exp(p):
     '''
-    g_exp : m_exp g_exp_1
+    g_exp : m_exp solve_g_exp g_exp_1 
     '''
 
 def p_g_exp_1(p):
@@ -452,7 +452,7 @@ def p_g_exp_1(p):
 
 def p_m_exp(p):
     '''
-    m_exp : term m_exp_1 
+    m_exp : term solve_m_exp  m_exp_1 
     '''
 
 def p_m_exp_1(p):
@@ -464,7 +464,7 @@ def p_m_exp_1(p):
 
 def p_term(p):
     '''
-    term : factor term_1
+    term : factor solve_term term_1
     '''
 
 def p_term_1(p):
@@ -476,17 +476,18 @@ def p_term_1(p):
 
 def p_factor(p):
     '''
-    factor : LPAREN exp RPAREN push_to_operand_stack
-           | variable push_to_operand_stack
-           | std_func push_to_operand_stack
+    factor : LPAREN insert_lparen exp solve_paren RPAREN change_solve 
            | CTE_INT push_to_operand_stack
            | CTE_FLOAT push_to_operand_stack
-       
+           | variable
+           | std_func
     '''
 
 ################################
 ####### Neuralgic Points ####### 
 ################################
+
+# <VARS>
 def p_set_scope(p):
     '''
     set_scope : empty
@@ -500,7 +501,6 @@ def p_get_id(p):
     '''
     global currId, currScope, currType
     currId = p[-1]
-    quads.insertNewOperand(currId)
 
 def p_get_xdims(p):
     '''
@@ -525,13 +525,14 @@ def p_reset_dims(p):
     currYDims = 0
 
 
+# <FUNCS>
 def p_insert_sp_func(p):
     '''
     insert_sp_func : empty
     '''
     global currId
     currId = p[-1]
-    quads.insertNewId(currId)
+    quads.insertOpAndType(currId, 0)
 
 def p_create_func(p):
     '''
@@ -551,23 +552,92 @@ def p_add_variable(p):
     '''
     add_variable : empty
     '''
-    #quads.printStacks()
     global currType, currId, currScope, currXDims, currYDims
     tmpVar = V.addVar(currId, currType, currScope, 0, currXDims, currYDims)
     FD.addVariable(tmpVar)
 
+# <EXPRESSIONS>
 def p_push_to_operator_stack(p):
     '''
     push_to_operator_stack : empty
     '''
-    print("operator ",p[-1])
-    # quads.insertNewOperator(p[1])
+    quads.insertOperator(CONV[p[-1]])
 
 def p_push_to_operand_stack(p):
     '''
     push_to_operand_stack : empty
     '''
-    print("operand ", p[-1])
+    if (type(p[-1]) is float):
+        quads.insertOpAndType(p[-1], 2)
+    elif(type(p[-1]) is int):
+        quads.insertOpAndType(p[-1], 1)
+ 
+def p_solve_m_exp(p):
+    '''
+    solve_m_exp : empty
+    '''
+    # + or -
+    if (quads.getOperator() == CONV['+'] or quads.getOperator() == CONV['-']):
+        # quads.checkPending(CONV['+'], CONV['-'])
+        quads.generateQuad()
+
+def p_solve_term(p):
+    '''
+    solve_term : empty
+    '''
+    # * or /
+    if (quads.getOperator() == CONV['*'] or quads.getOperator() == CONV['/']):
+        # quads.checkPending(CONV['*'], CONV['/'])
+        quads.generateQuad()
+
+
+def p_solve_t_exp(p):
+    '''
+    solve_t_exp : empty
+    '''
+    if (quads.getOperator() == CONV['and']):
+        quads.generateQuad()
+
+def p_solve_g_exp(p):
+    '''
+    solve_g_exp : empty
+    '''
+    try:
+        if (quads.getOperator() == CONV['or']):
+            quads.generateQuad()
+    except IndexError:
+        pass
+
+
+def p_solve_exp(p):
+    '''
+    solve_exp : empty
+    '''
+    if (quads.getOperator() == CONV['or']):
+        quads.generateQuad()
+
+def p_insert_lparen(p):
+    '''
+    insert_lparen : empty
+    '''
+    quads.insertOpAndType(CONV[p[-1]], 0)
+
+def p_solve_paren (p):
+    '''
+    solve_paren : empty
+    '''
+    global solve
+    solve = False
+    quads.popParen()
+    quads.generateQuad()
+
+def p_change_solve(p):
+    '''
+    change_solve : empty
+    '''
+    global solve
+    solve = True
+
 
 ################################
 ######## Empty && Error ######## 
@@ -581,7 +651,7 @@ def p_empty(p):
 def p_error(p):
     if p:
         # Print the line number and character position where the error occurred
-        print(f"Syntax error at line {p.lineno}, position {p.lexpos}: unexpected {p.value}")
+        print(f"Syntax error at line {p.lineno}: unexpected {p.value}")
     else:
         print("Syntax error: unexpected end of input")
 
@@ -592,6 +662,10 @@ def p_error(p):
 with open('Tests/simple.moo', 'r') as file:
     data = file.read()
 
-parser = yacc.yacc()
-result = parser.parse(data)
-# FD.printFuncDir()
+    parser = yacc.yacc()
+    result = parser.parse(data)
+# try:
+# except IndexError:
+#     print("AN ERROR OCCURRED")
+FD.printFuncDir()
+
