@@ -5,164 +5,178 @@ TODO: Revisar cubo con la maestra
  - char
  - bools
 
-
-void  0
-int   'int'
-float 'float'
-char  'char'
-bool  'bool'
-+     '+'
--     '-'
-*     '*'
-/     '/'
-=     '='
--gt   '-gt'
--ge    '-ge'
--lt    '-lt'
--le    '-eq'
--eq    16
--ne    18
-GOTO  16
-GOTOF 17
-GOTOV 18
-
+void         0,
+int          1,
+float        2,
+char         3,
+file         4,
+bool         5,
++            6,
+-            7,
+*            8,
+/            9,
+(            10,
+)            11,
+=            12,
+-gt          13,
+-ge          14,
+-lt          15,
+-le          16,
+-eq          17,
+-ne          18,
+and          19,
+or           20,
+GOTO         21,
+GOTOF        22,
+GOTOV        23,
+local        24,
+global       25,
+open         26, 
+read         27, 
+write        28, 
+close        29,
+encrypt      30,
+decrypt      31,
+hash_md5     32,
+hash_sha256  33, 
+generate_key 34
 '''
 
 
 CUBE = {
-        'int': {
-            'int' : {
-                '+':   'int',
-                '-':   'int',
-                '*':   'int',
-                '/':   'int',
-                '=':   'int',
-                '-gt':  'bool',
-                '-ge':  'bool',
-                '-lt':  'bool',
-                '-le':  'bool',
-                '-eq':  'bool',
-                '-ne':  'bool',
+        1: {
+            1 : {
+                6:   1,
+                7:   1,
+                8:   1,
+                9:   1,
+                12:   1,
+                13:  4,
+                14:  4,
+                15:  4,
+                16:  4,
+                17:  4,
+                18:  4,
                 }, 
 
-            'float': {
-                '+':   'float',
-                '-':   'float',
-                '*':   'float',
-                '/':   'float',
-                '=':   'float',
-                '-gt':  'bool',
-                '-ge':  'bool',
-                '-lt':  'bool',
-                '-le':  'bool',
-                '-eq':  'bool',
-                '-ne':  'bool',
+            2: {
+                6:   2,
+                7:   2,
+                8:   2,
+                9:   2,
+                12:   2,
+                13:  4,
+                14:  4,
+                15:  4,
+                16:  4,
+                17:  4,
+                18:  4,
                 },
 
-            'char': {
-                '+':   'char',
-                '-':   'char',
-                '*':   'char',
-                '/':   'char',
-                '=':   'char',
-                '-gt':  'bool',
-                '-ge':  'bool',
-                '-lt':  'bool',
-                '-le':  'bool',
-                '-eq':  'bool',
-                '-ne':  'bool',
+            3: {
+                6:   3,
+                7:   3,
+                8:   3,
+                9:   3,
+                12:   3,
+                13:  4,
+                14:  4,
+                15:  4,
+                16:  4,
+                17:  4,
+                18:  4,
                 }
-            }, # int
+            }, 
 
-        'float': {
-            'int' : {
-                '+':   'float',
-                '-':   'float',
-                '*':   'float',
-                '/':   'float',
-                '=':   'float',
-                '-gt':  'bool',
-                '-ge':  'bool',
-                '-lt':  'bool',
-                '-le':  'bool',
-                '-eq':  'bool',
-                '-ne':  'bool',
+        2: {
+            1 : {
+                6:   2,
+                7:   2,
+                8:   2,
+                9:   2,
+                12:   2,
+                13:  4,
+                14:  4,
+                15:  4,
+                16:  4,
+                17:  4,
+                18:  4,
                 },
 
-            'float': {
-                '+':   'float',
-                '-':   'float',
-                '*':   'float',
-                '/':   'float',
-                '=':   'float',
-                '-gt':  'bool',
-                '-ge':  'bool',
-                '-lt':  'bool',
-                '-le':  'bool',
-                '-eq':  'bool',
-                '-ne':  'bool',
+            2: {
+                6:   2,
+                7:   2,
+                8:   2,
+                9:   2,
+                12:   2,
+                13:  4,
+                14:  4,
+                15:  4,
+                16:  4,
+                17:  4,
+                18:  4,
                 },
 
-            'char': {
-                '+':   'char',
-                '-':   'char',
-                '*':   'char',
-                '/':   'char',
-                '=':   'char',
-                '-gt':  'bool',
-                '-ge':  'bool',
-                '-lt':  'bool',
-                '-le':  'bool',
-                '-eq':  'bool',
-                '-ne':  'bool',
+            3: {
+                6:   3,
+                7:   3,
+                8:   3,
+                9:   3,
+                12:   3,
+                13:  4,
+                14:  4,
+                15:  4,
+                16:  4,
+                17:  4,
+                18:  4,
                 },
 
-            }, # float
+            }, 
 
-        'char' : {
-                'int' : {
-                    '+':   'char',
-                    '-':   'char',
-                    '*':   'char',
-                    '/':   'char',
-                    '=':   'char',
-                    '-gt':  'bool',
-                    '-ge':  'bool',
-                    '-lt':  'bool',
-                    '-le':  'bool',
-                    '-eq':  'bool',
-                    '-ne':  'bool',
+        3 : {
+                1 : {
+                    6:   3,
+                    7:   3,
+                    8:   3,
+                    9:   3,
+                    12:   3,
+                    13:  4,
+                    14:  4,
+                    15:  4,
+                    16:  4,
+                    17:  4,
+                    18:  4,
                     },
 
-                'float': {
-                    '+':   'char',
-                    '-':   'char',
-                    '*':   'char',
-                    '/':   'char',
-                    '=':   'char',
-                    '-gt':  'bool',
-                    '-ge':  'bool',
-                    '-lt':  'bool',
-                    '-le':  'bool',
-                    '-eq':  'bool',
-                    '-ne':  'bool',
+                2: {
+                    6:   3,
+                    7:   3,
+                    8:   3,
+                    9:   3,
+                    12:   3,
+                    13:  4,
+                    14:  4,
+                    15:  4,
+                    16:  4,
+                    17:  4,
+                    18:  4,
                     },
 
-                'char': {
-                    '+':   'char',
-                    '-':   'char',
-                    '*':   'char',
-                    '/':   'char',
-                    '=':   'char',
-                    '-gt':  'bool',
-                    '-ge':  'bool',
-                    '-lt':  'bool',
-                    '-le':  'bool',
-                    '-eq':  'bool',
-                    '-ne':  'bool',
+                3: {
+                    6:   3,
+                    7:   3,
+                    8:   3,
+                    9:   3,
+                    12:   3,
+                    13:  4,
+                    14:  4,
+                    15:  4,
+                    16:  4,
+                    17:  4,
+                    18:  4,
             }
 
-       } # char
+       }
 
 } # end
 
