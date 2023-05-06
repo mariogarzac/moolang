@@ -30,7 +30,7 @@ CONV = {
     'int':           1,
     'float':         2,
     'char':          3,
-    'file':          5,
+    'file':          4,
     'bool':          5,
     '+':             6,
     '-':             7,
@@ -201,13 +201,9 @@ def p_assignment(p):
 
 def p_assignment_1(p):
     '''
-    assignment_1 : exp SEMICOL
+    assignment_1 : exp assign_var SEMICOL
                  | sp_func
     '''
-    quads.generateQuad()
-    value = quads.popOperand()
-    id = quads.popOperand()
-    FD.assignValue(id, value)
 
 # accesing variables
 def p_variable(p):
@@ -476,7 +472,7 @@ def p_term_1(p):
 
 def p_factor(p):
     '''
-    factor : LPAREN insert_lparen exp solve_paren RPAREN change_solve 
+    factor : LPAREN insert_lparen exp solve_paren RPAREN 
            | CTE_INT push_to_operand_stack
            | CTE_FLOAT push_to_operand_stack
            | variable
@@ -568,9 +564,9 @@ def p_push_to_operand_stack(p):
     push_to_operand_stack : empty
     '''
     if (type(p[-1]) is float):
-        quads.insertOpAndType(p[-1], 2)
+        quads.insertOpAndType(p[-1], CONV['float'])
     elif(type(p[-1]) is int):
-        quads.insertOpAndType(p[-1], 1)
+        quads.insertOpAndType(p[-1], CONV['int'])
  
 def p_solve_m_exp(p):
     '''
@@ -590,7 +586,6 @@ def p_solve_term(p):
         # quads.checkPending(CONV['*'], CONV['/'])
         quads.generateQuad()
 
-
 def p_solve_t_exp(p):
     '''
     solve_t_exp : empty
@@ -602,12 +597,8 @@ def p_solve_g_exp(p):
     '''
     solve_g_exp : empty
     '''
-    try:
-        if (quads.getOperator() == CONV['or']):
-            quads.generateQuad()
-    except IndexError:
-        pass
-
+    if (quads.getOperator() == CONV['or']):
+        quads.generateQuad()
 
 def p_solve_exp(p):
     '''
@@ -620,24 +611,24 @@ def p_insert_lparen(p):
     '''
     insert_lparen : empty
     '''
-    quads.insertOpAndType(CONV[p[-1]], 0)
+    quads.insertOperator(CONV['('])
 
-def p_solve_paren (p):
+def p_solve_paren(p):
     '''
     solve_paren : empty
     '''
-    global solve
-    solve = False
+    while (quads.getOperator() != CONV['(']):
+        quads.generateQuad()
     quads.popParen()
+
+def p_assign_var(p):
+    '''
+    assign_var : empty
+    '''
     quads.generateQuad()
-
-def p_change_solve(p):
-    '''
-    change_solve : empty
-    '''
-    global solve
-    solve = True
-
+    value = quads.popOperand()
+    id = quads.popOperand()
+    FD.assignValue(id, value)
 
 ################################
 ######## Empty && Error ######## 

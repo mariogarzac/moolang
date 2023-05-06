@@ -13,7 +13,7 @@ class Quadruple:
         self.temp = temp
 
     def printContents(self):
-        print(f"contents: {self.operator} ,{self.leftOperand} ,{self.rightOperand} ,{self.temp}")
+        print(f"{self.operator} {self.leftOperand} {self.rightOperand} {self.temp}")
 
 class QuadrupleTable:
 
@@ -49,6 +49,15 @@ class QuadrupleTable:
     def popJump(self):
         return self.jumpStack.pop()
 
+    def popParen(self):
+        try:
+            parenIndex = self.operatorStack.index(10)
+            self.operatorStack.pop(self.operatorStack.index(10))
+        except ValueError:
+            parenIndex = self.operatorStack.index(10)
+            typeIndex = self.operatorStack.index(None)
+            print("Not Found")
+
     # <GET FROM STACK OR GET POINTER>
     def getOperator(self):
         return self.operatorStack[-1]
@@ -65,10 +74,7 @@ class QuadrupleTable:
     def getQuadPointer(self):
         return quadPointer
 
-    def printTheQuads(self):
-        for i in range(0, len(self.quads)):
-            print(self.quads[i].printContents())
-
+    # <TYPE CHECKING>
     def checkTypeMismatch(self, leftType, rightType, operator):
         try:
             if (CUBE[leftType][rightType][operator]):
@@ -77,19 +83,16 @@ class QuadrupleTable:
             print("ERROR: TypeMismatch")
             exit()
 
+    # <PRINTS AND MISC>
+    def printTheQuad(self):
+        self.quads[len(self.quads) - 1].printContents()
+
     def printStacks(self):
-        print("TYPESTACK ", self.typeStack)
-        print("OPERANDSTACK ", self.operandStack)
-        print("OPERATORSTACK ", self.operatorStack)
+        print("TYPESTACK",self.typeStack)
+        print("OPERANDSTACK",self.operandStack)
+        print("OPERATORSTACK",self.operatorStack)
         print("\n")
 
-
-    def popParen(self):
-        try:
-            self.operatorStack.pop(self.operatorStack.index(10))
-            self.typeStack.pop(self.typeStack.index(0))
-        except ValueError:
-            print("Not Found")
 
     def checkPending(self, op1, op2):
         length = len(self.operatorStack)
@@ -102,11 +105,9 @@ class QuadrupleTable:
 
     # <HIT THE QUADS>
     def generateQuad(self):
-
         operator = self.popOperator()
         rightType = self.popType()
         leftType = self.popType()
-
         resType = self.checkTypeMismatch(leftType, rightType, operator)
 
         if (operator < 10):
@@ -127,8 +128,6 @@ class QuadrupleTable:
 
             self.quads.append(Quadruple(operator, leftOperand, rightOperand, self.temp))
             self.insertOpAndType(self.temp, resType)
-            print(operator, leftOperand, rightOperand, self.temp)
-
         else:
             if (operator == 12) :
                 # Pop them to generate quad
@@ -140,6 +139,8 @@ class QuadrupleTable:
                 self.insertOpAndType(res, leftType)
 
                 operator = '='
+                self.quads.append(Quadruple(operator, res, None, operand))
 
+        self.printTheQuad()
         self.quadPointer += 1
 
