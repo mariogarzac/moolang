@@ -19,3 +19,10 @@ a números en vez de strings.
 El avance de la generación de expresiones
 está fluyendo bien, sin embargo he estado teniendo problemas guardando las variables en orden.
 Confio que esta semana será resuelto lo que queda pendiente y lo que sigue por entregarse.
+
+## Avance 4 07/05/23
+En este avance logré hacer buen progreso sobre mi compilador, ya que pude generar expresiones
+con paréntesis y guardarlas en la variable. Las funciones especiales también están por ser completadas. 
+Por el momento me falta validar que la variable en la que se guarda exista la información, poder asignar
+un valor a una variable de un arreglo y lo que correspondía para esta semana, ciclos y condiciones. Espero
+para la siguiente entrega finalmente ponerme al corriente.
