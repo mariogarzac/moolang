@@ -3,6 +3,7 @@ from mooLex import tokens
 from quadruples import QuadrupleTable 
 from FunctionDirectory import FunctionDirectory as FD
 from FunctionDirectory import Variable as V
+from cube import CONV
 
 
 ################################
@@ -20,50 +21,6 @@ solve = True
 quads = QuadrupleTable()
 V = V()
 FD = FD()
-
-################################
-######## Convert Strings #######
-################################
-
-CONV = {
-    'void':          0,
-    'int':           1,
-    'float':         2,
-    'char':          3,
-    'file':          4,
-    'bool':          5,
-    '+':             6,
-    '-':             7,
-    '*':             8,
-    '/':             9,
-    '(':             10,
-    ')':             11,
-    '=':             12,
-    '-gt':           13,
-    '-ge':           14,
-    '-lt':           15,
-    '-le':           16,
-    '-eq':           17,
-    '-ne':           18,
-    'and':           19,
-    'or':            20,
-    'GOTO':          21,
-    'GOTOF':         22,
-    'GOTOV':         23,
-    'local':         24,
-    'global':        25,
-    'open' :         26, 
-    'read' :         27, 
-    'write'  :       28, 
-    'close' :        29,
-    'encrypt' :      30,
-    'decrypt' :      31,
-    'hash_md5' :     32,
-    'hash_sha256' :  33, 
-    'generate_key':  34
-    }
-
-
 
 ################################
 ######### Syntax Rules ######### 
@@ -432,7 +389,7 @@ def p_t_exp_1(p):
 # TODO THIS G_EXP
 def p_g_exp(p):
     '''
-    g_exp : m_exp solve_g_exp g_exp_1 
+    g_exp : m_exp g_exp_1 solve_g_exp  
     '''
 
 def p_g_exp_1(p):
@@ -527,8 +484,9 @@ def p_insert_sp_func(p):
     insert_sp_func : empty
     '''
     global currId
-    currId = p[-1]
-    quads.insertOpAndType(currId, 0)
+    currId = CONV[p[-1]]
+    quads.insertOperator(currId)
+    quads.generateSpFunc()
 
 def p_create_func(p):
     '''
@@ -563,10 +521,15 @@ def p_push_to_operand_stack(p):
     '''
     push_to_operand_stack : empty
     '''
+    # FD.getVarType(p[-1]) 
+    # if (!= None):
+
     if (type(p[-1]) is float):
         quads.insertOpAndType(p[-1], CONV['float'])
     elif(type(p[-1]) is int):
         quads.insertOpAndType(p[-1], CONV['int'])
+    # quads.printStacks()
+
  
 def p_solve_m_exp(p):
     '''
@@ -597,7 +560,8 @@ def p_solve_g_exp(p):
     '''
     solve_g_exp : empty
     '''
-    if (quads.getOperator() == CONV['or']):
+    ops = [CONV['-gt'],CONV['-ge'],CONV['-lt'],CONV['-le'],CONV['-eq'],CONV['-ne']]
+    if (quads.getOperator() in ops):
         quads.generateQuad()
 
 def p_solve_exp(p):
@@ -658,5 +622,4 @@ with open('Tests/simple.moo', 'r') as file:
 # try:
 # except IndexError:
 #     print("AN ERROR OCCURRED")
-FD.printFuncDir()
-
+#FD.printFuncDir()
