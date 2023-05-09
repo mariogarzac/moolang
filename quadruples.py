@@ -1,9 +1,6 @@
-
-'''
-may a god bless your soul child
-'''
-
 from cube import CUBE
+from cube import CONV
+
 
 class Quadruple:
     def __init__(self, operator, leftOperand, rightOperand, temp):
@@ -51,16 +48,16 @@ class QuadrupleTable:
 
     def popParen(self):
         try:
-            parenIndex = self.operatorStack.index(10)
             self.operatorStack.pop(self.operatorStack.index(10))
         except ValueError:
-            parenIndex = self.operatorStack.index(10)
-            typeIndex = self.operatorStack.index(None)
             print("Not Found")
 
     # <GET FROM STACK OR GET POINTER>
     def getOperator(self):
-        return self.operatorStack[-1]
+        try:
+            return self.operatorStack[-1]
+        except IndexError:
+            pass
 
     def getOperand(self):
         return self.operandStack[-1]
@@ -80,7 +77,9 @@ class QuadrupleTable:
             if (CUBE[leftType][rightType][operator]):
                 return CUBE[leftType][rightType][operator]
         except:
-            print("ERROR: TypeMismatch")
+            lT = (list(CONV.keys())[list(CONV.values()).index(leftType)])            
+            rT = (list(CONV.keys())[list(CONV.values()).index(rightType)])
+            print(f"ERROR: TypeMismatch <{lT}, {rT}>")
             exit()
 
     # <PRINTS AND MISC>
@@ -93,16 +92,6 @@ class QuadrupleTable:
         print("OPERATORSTACK",self.operatorStack)
         print("\n")
 
-
-    def checkPending(self, op1, op2):
-        length = len(self.operatorStack)
-        for i in range(0, length - 1):
-            if (self.operatorStack[i] == op1 or self.operatorStack[i] == op2):
-                tmpPop = self.operatorStack.pop(i) 
-                self.insertOperator(tmpPop)
-                return
-    
-
     # <HIT THE QUADS>
     def generateQuad(self):
         operator = self.popOperator()
@@ -110,37 +99,23 @@ class QuadrupleTable:
         leftType = self.popType()
         resType = self.checkTypeMismatch(leftType, rightType, operator)
 
-        if (operator < 10):
+        if (operator != CONV['=']):
             rightOperand = self.popOperand()
             leftOperand = self.popOperand()
-            if (operator == 6):
-                operator = '+'
-                self.temp = leftOperand + rightOperand
-            elif(operator == 7) :
-                operator = '-'
-                self.temp = leftOperand - rightOperand
-            elif(operator == 8) :
-                operator = '*'
-                self.temp = leftOperand * rightOperand
-            elif(operator == 9) :
-                operator = '/'
-                self.temp = leftOperand / rightOperand
 
+            self.temp += 1
+            operator = (list(CONV.keys())[list(CONV.values()).index(operator)]) #pretty print op
             self.quads.append(Quadruple(operator, leftOperand, rightOperand, self.temp))
+
+            # After generating the quadruple, add the new value and type
             self.insertOpAndType(self.temp, resType)
-        else:
-            if (operator == 12) :
-                # Pop them to generate quad
-                res = self.popOperand()
-                operand = self.popOperand()
 
-                # Reinsert them to add to variable
-                self.insertOpAndType(operand, rightType)
-                self.insertOpAndType(res, leftType)
-
-                operator = '='
-                self.quads.append(Quadruple(operator, res, None, operand))
+        elif (operator == CONV['=']):
+            res = self.popOperand()
+            var = self.popOperand()
+            self.quads.append(Quadruple(operator, res, None, var))
+            self.operandStack.append(var)
+            self.operandStack.append(res)
 
         self.printTheQuad()
         self.quadPointer += 1
-
