@@ -55,7 +55,12 @@ class FunctionDirectory:
 
     def getVarType(self, varId):
         id = str(varId)
-        return self.funcDirectory[self.funcCounter]["fVars"][id]["vType"]
+        try:
+            return self.funcDirectory[self.funcCounter]["fVars"][id]["vType"]
+        except KeyError:
+            print("ERROR: Variable does not exist")
+            exit()
+    
 
     def printFuncDir(self):
         print(json.dumps(self.funcDirectory, indent=4, sort_keys=False))
