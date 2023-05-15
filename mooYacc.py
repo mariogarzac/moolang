@@ -1,3 +1,8 @@
+'''
+TODO:
+    - func calls with two params
+    - funcs
+'''
 import ply.yacc as yacc
 from mooLex import tokens 
 from quadruples import QuadrupleTable 
@@ -6,31 +11,40 @@ from FunctionDirectory import Variable as V
 from cube import CONV
 
 
-################################
-######## Global Variables ######
-################################
+ 
+# ------------------------------------------------------------------------------
+## Global Variables-------------------------------------------------------------
+
 currId = ""
+currFuncId = ""
 currType = 1
 currScope = 21
 currXDims = 0
 currYDims = 0
 tmpDims = 0
 counter = 0
-solve = True
+fill = True
+input = ""
 
 quads = QuadrupleTable()
 V = V()
 FD = FD()
 
-################################
-######### Syntax Rules ######### 
-################################
+# ------------------------------------------------------------------------------
+## Syntax Rules-----------------------------------------------------------------
 
 # program start
 def p_prog(p):
     '''
-    prog : prog_1 prog_2 MAIN LPAREN RPAREN LCURLY block RCURLY 
+    prog : prog_1 prog_2 MAIN LPAREN RPAREN LCURLY block insert_endfunc RCURLY 
     '''
+
+def p_insert_endfunc(p):
+    '''
+    insert_endfunc : empty
+    '''
+    quads.insertEndfunc()
+    
 
 def p_prog_1(p):
     '''
@@ -159,7 +173,7 @@ def p_assignment(p):
 def p_assignment_1(p):
     '''
     assignment_1 : exp assign_var SEMICOL
-                 | sp_func
+                 | sp_func assign_sp_func
     '''
 
 # accesing variables
@@ -214,12 +228,12 @@ def p_c_print_2(p):
 # conditionals 
 def p_condition(p):
     '''
-    condition : IF LPAREN exp RPAREN LCURLY block RCURLY condition_1
+    condition : IF LPAREN exp push_jump insert_f_goto RPAREN LCURLY block RCURLY condition_1 fill_gotof
     '''
 
 def p_condition_1(p):
     '''
-    condition_1 : ELSE LCURLY block RCURLY
+    condition_1 : fill_gotof_alt push_jump insert_goto ELSE LCURLY block RCURLY fill_goto
                 | empty
     '''
 
@@ -235,11 +249,10 @@ def p_for_loop_1(p):
                | empty
     '''
 
-
 # while loops
 def p_while_loop(p):
     '''
-    while_loop : WHILE LPAREN exp RPAREN LCURLY block RCURLY
+    while_loop : WHILE LPAREN exp push_jump insert_v_goto RPAREN LCURLY block RCURLY insert_goto fill_goto fill_gotov
     '''
 
 # standard functions
@@ -292,58 +305,58 @@ def p_crypto_func(p):
                 | hash_md5 
     '''
 
-def p_generate_key_func(p):
-    '''
-    generate_key_func : GENERATE_KEY insert_sp_func LPAREN RPAREN 
-    '''
-
 # file manipulation
 def p_open_file(p):
     '''
-    open_file : OPEN insert_sp_func LPAREN CTE_CHAR RPAREN
+    open_file : OPEN get_func_id LPAREN CTE_CHAR insert_param RPAREN insert_file_func 
     '''
 
 def p_read_file(p):
     '''
-    read_file : READ insert_sp_func LPAREN ID RPAREN 
+    read_file : READ get_func_id LPAREN ID insert_file_id RPAREN insert_file_func 
     '''
 
 def p_write_file(p):
     '''
-    write_file : WRITE insert_sp_func LPAREN CTE_CHAR ID RPAREN
+    write_file : WRITE get_func_id LPAREN CTE_CHAR insert_param COMMA ID insert_file_id RPAREN insert_file_func
     '''
 
 def p_close_file(p):
     '''
-    close_file : CLOSE insert_sp_func LPAREN ID RPAREN
+    close_file : CLOSE get_func_id LPAREN ID insert_file_id RPAREN insert_file_func 
     '''
 
 # cryptography functions
+def p_generate_key_func(p):
+    '''
+    generate_key_func : GENERATE_KEY get_func_id LPAREN RPAREN insert_file_func 
+    '''
+
 def p_encrypt_func(p):
     '''
-    encrypt_func : ENCRYPT insert_sp_func LPAREN encrypt_func_1 COMMA ID RPAREN
+    encrypt_func : ENCRYPT get_func_id LPAREN encrypt_func_1 COMMA ID RPAREN insert_crypto_func
     '''
 
 def p_encrypt_func_1(p):
     '''
-    encrypt_func_1 : CTE_CHAR
-                   | ID
+    encrypt_func_1 : CTE_CHAR push_to_operand_stack
+                   | ID push_to_operand_stack
     '''
 
 def p_decrypt_func(p):
     '''
-    decrypt_func : DECRYPT LPAREN decrypt_func_1 COMMA ID RPAREN
+    decrypt_func : DECRYPT get_func_id LPAREN decrypt_func_1 COMMA ID RPAREN insert_crypto_func
     '''
 
 def p_decrypt_func_1(p):
     '''
-    decrypt_func_1 : CTE_CHAR
-                   | ID
+    decrypt_func_1 : CTE_CHAR push_to_operand_stack
+                   | ID push_to_operand_stack
     '''
 
 def p_hash_sha_256(p):
     '''
-    hash_sha_256 : HASH_SHA256 LPAREN hash_sha_256_1 RPAREN
+    hash_sha_256 : HASH_SHA256 get_func_id LPAREN hash_sha_256_1 RPAREN insert_crypto_func
     '''
 
 def p_hash_sha_256_1(p):
@@ -354,7 +367,7 @@ def p_hash_sha_256_1(p):
 
 def p_hash_md5(p):
     '''
-    hash_md5 : HASH_MD5 LPAREN hash_md5_1 RPAREN
+    hash_md5 : HASH_MD5 get_func_id LPAREN hash_md5_1 RPAREN insert_crypto_func
     '''
 
 def p_hash_md5_1(p):
@@ -366,7 +379,7 @@ def p_hash_md5_1(p):
 # expressions
 def p_exp(p):
     '''
-    exp : t_exp exp_1  solve_exp 
+    exp : t_exp exp_1 solve_exp 
     '''
 
 def p_exp_1(p):
@@ -405,7 +418,7 @@ def p_g_exp_1(p):
 
 def p_m_exp(p):
     '''
-    m_exp : term solve_m_exp  m_exp_1 
+    m_exp : term solve_m_exp m_exp_1 
     '''
 
 def p_m_exp_1(p):
@@ -436,11 +449,9 @@ def p_factor(p):
            | std_func
     '''
 
-################################
-####### Neuralgic Points ####### 
-################################
 
-# <VARS>
+# ------------------------------------------------------------------------------
+## VARS-------------------------------------------------------------------------
 def p_set_scope(p):
     '''
     set_scope : empty
@@ -452,8 +463,15 @@ def p_get_id(p):
     '''
     get_id : empty
     '''
-    global currId, currScope, currType
+    global currId
     currId = p[-1]
+    
+def p_get_func_id(p):
+    '''
+    get_func_id : empty
+    '''
+    global currFuncId
+    currFuncId = p[-1]
 
 def p_get_xdims(p):
     '''
@@ -477,17 +495,19 @@ def p_reset_dims(p):
     currXDims = 0
     currYDims = 0
 
-
-# <FUNCS>
-def p_insert_sp_func(p):
+def p_assign_var(p):
     '''
-    insert_sp_func : empty
+    assign_var : empty
     '''
-    global currId
-    currId = CONV[p[-1]]
-    quads.insertOperator(currId)
-    quads.generateSpFunc()
+    quads.generateQuad()
 
+def p_assign_sp_func(p):
+    '''
+    assign_sp_func : empty
+    '''
+    quads.assignSpFunc()
+
+## FUNCS------------------------------------------------------------------------
 def p_create_func(p):
     '''
     create_func : empty
@@ -510,7 +530,36 @@ def p_add_variable(p):
     tmpVar = V.addVar(currId, currType, currScope, 0, currXDims, currYDims)
     FD.addVariable(tmpVar)
 
-# <EXPRESSIONS>
+## SP FUNCS---------------------------------------------------------------------
+def p_insert_crypto_func(p):
+    '''
+    insert_crypto_func : empty
+    '''
+    global currFuncId
+    quads.insertOperator(CONV[currFuncId])
+    quads.generateSpFunc()
+
+def p_insert_file_func(p):
+    '''
+    insert_file_func : empty
+    '''
+    global currFuncId
+    quads.insertOperator(CONV[currFuncId])
+    quads.generateFileFunc()
+
+def p_insert_param(p):
+    '''
+    insert_param : empty
+    '''
+    quads.insertOpAndType(p[-1], CONV['char'])
+
+def p_insert_file_id(p):
+    '''
+    insert_file_id : empty
+    '''
+    quads.insertOpAndType(p[-1], FD.getVarType(p[-1]))
+
+## EXPRESSIONS-----------------------------------------------------------------
 def p_push_to_operator_stack(p):
     '''
     push_to_operator_stack : empty
@@ -521,15 +570,13 @@ def p_push_to_operand_stack(p):
     '''
     push_to_operand_stack : empty
     '''
-    # FD.getVarType(p[-1]) 
-    # if (!= None):
 
     if (type(p[-1]) is float):
         quads.insertOpAndType(p[-1], CONV['float'])
     elif(type(p[-1]) is int):
         quads.insertOpAndType(p[-1], CONV['int'])
-    # quads.printStacks()
-
+    else:
+        quads.insertOpAndType(p[-1], FD.getVarType(p[-1]))
  
 def p_solve_m_exp(p):
     '''
@@ -537,7 +584,6 @@ def p_solve_m_exp(p):
     '''
     # + or -
     if (quads.getOperator() == CONV['+'] or quads.getOperator() == CONV['-']):
-        # quads.checkPending(CONV['+'], CONV['-'])
         quads.generateQuad()
 
 def p_solve_term(p):
@@ -546,7 +592,6 @@ def p_solve_term(p):
     '''
     # * or /
     if (quads.getOperator() == CONV['*'] or quads.getOperator() == CONV['/']):
-        # quads.checkPending(CONV['*'], CONV['/'])
         quads.generateQuad()
 
 def p_solve_t_exp(p):
@@ -585,18 +630,65 @@ def p_solve_paren(p):
         quads.generateQuad()
     quads.popParen()
 
-def p_assign_var(p):
+## GOTOs------------------------------------------------------------------------
+def p_push_jump(p):
     '''
-    assign_var : empty
+    push_jump : empty
     '''
-    quads.generateQuad()
-    value = quads.popOperand()
-    id = quads.popOperand()
-    FD.assignValue(id, value)
+    quads.insertJump()
 
-################################
-######## Empty && Error ######## 
-################################
+def p_insert_v_goto(p):
+    '''
+    insert_v_goto : empty 
+    '''
+    quads.insertOperator(CONV['gotov'])
+    quads.generateGotoV()
+
+def p_insert_f_goto(p):
+    '''
+    insert_f_goto : empty
+    '''
+    quads.insertOperator(CONV['gotof'])
+    quads.generateGotoF()
+
+def p_insert_goto(p):
+    '''
+    insert_goto : empty
+    '''
+    quads.insertOperator(CONV['goto'])
+    quads.generateGoto()
+
+def p_fill_gotov(p):
+    '''
+    fill_gotov : empty
+    '''
+    print("")
+
+def p_fill_gotof(p):
+    '''
+    fill_gotof : empty
+    '''
+    global fill
+    if (fill):
+        quads.fillGotoF()
+    fill = True
+
+def p_fill_gotof_alt(p):
+    '''
+    fill_gotof_alt : empty
+    '''
+    global fill
+    fill = False
+    quads.fillGotoFAlt()
+
+def p_fill_goto(p):
+    '''
+    fill_goto : empty
+    '''
+    quads.fillGoto()
+
+
+# ------------------------------------------------------------------------------
 def p_empty(p):
 	'''
 	empty : 
@@ -611,15 +703,11 @@ def p_error(p):
         print("Syntax error: unexpected end of input")
 
 
-################################
-######## Testing && Run ######## 
-################################
+# ------------------------------------------------------------------------------
+# try:
 with open('Tests/simple.moo', 'r') as file:
     data = file.read()
 
     parser = yacc.yacc()
     result = parser.parse(data)
-# try:
-# except IndexError:
-#     print("AN ERROR OCCURRED")
-#FD.printFuncDir()
+quads.printTheQuads()
