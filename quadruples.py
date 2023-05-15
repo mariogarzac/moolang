@@ -10,7 +10,9 @@ class Quadruple:
         self.temp = temp
 
     def printContents(self):
-        print(f"{self.operator} {self.leftOperand} {self.rightOperand} {self.temp}")
+        #pretty print op
+        operator = (list(CONV.keys())[list(CONV.values()).index(self.operator)]) 
+        print(f"{operator} {self.leftOperand} {self.rightOperand} {self.temp}")
 
 class QuadrupleTable:
 
@@ -33,6 +35,10 @@ class QuadrupleTable:
     def insertOperator(self, newOp):
         self.operatorStack.append(newOp)
 
+    def insertJump(self):
+        # Subtract 1 because the pointer points to the next quad
+        self.jumpStack.append(self.quadPointer - 1)
+
     # <POP POPS>
     def popOperator(self):
         return self.operatorStack.pop()
@@ -48,7 +54,7 @@ class QuadrupleTable:
 
     def popParen(self):
         try:
-            self.operatorStack.pop(self.operatorStack.index(10))
+            self.operatorStack.pop(self.operatorStack.index(CONV['(']))
         except ValueError:
             print("Not Found")
 
@@ -69,7 +75,7 @@ class QuadrupleTable:
         return self.jumpStack[-1]
 
     def getQuadPointer(self):
-        return quadPointer
+        return self.quadPointer
 
     # <TYPE CHECKING>
     def checkTypeMismatch(self, leftType, rightType, operator):
@@ -86,10 +92,17 @@ class QuadrupleTable:
     def printTheQuad(self):
         self.quads[len(self.quads) - 1].printContents()
 
+    def printTheQuads(self):
+        for i in range(0, len(self.quads)):
+            print(i, end=" ") 
+            self.quads[i].printContents()
+
+
     def printStacks(self):
         print("TYPESTACK",self.typeStack)
         print("OPERANDSTACK",self.operandStack)
         print("OPERATORSTACK",self.operatorStack)
+        print("JUMPS",self.jumpStack)
         print("\n")
 
     # <HIT THE QUADS>
@@ -103,19 +116,114 @@ class QuadrupleTable:
             rightOperand = self.popOperand()
             leftOperand = self.popOperand()
 
-            self.temp += 1
-            operator = (list(CONV.keys())[list(CONV.values()).index(operator)]) #pretty print op
             self.quads.append(Quadruple(operator, leftOperand, rightOperand, self.temp))
+
+            self.temp += 1
 
             # After generating the quadruple, add the new value and type
             self.insertOpAndType(self.temp, resType)
 
-        elif (operator == CONV['=']):
+        else: # If operator is '='
             res = self.popOperand()
             var = self.popOperand()
             self.quads.append(Quadruple(operator, res, None, var))
-            self.operandStack.append(var)
-            self.operandStack.append(res)
+            # self.operandStack.append(var)
+            # self.operandStack.append(res)
 
-        self.printTheQuad()
+        self.quadPointer += 1
+
+    # <SPECIAL FUNCS>
+    def generateFileFunc(self):
+        operator = self.popOperator()
+
+        if (operator == CONV['open']):
+            operand = self.popOperand()
+            self.quads.append(Quadruple(operator, None, operand, self.temp))
+
+        elif (operator == CONV['write']):
+            # pop variables to keep stack clean
+            varType = self.popType()
+            self.popType()
+
+            if (varType == CONV['file']):
+                file = self.popOperand()
+                string = self.popOperand()
+                self.quads.append(Quadruple(operator, string, None, file))
+                self.quadPointer += 1
+            else:
+                print("ERROR: Only files can be written")
+                exit()
+            
+        elif (operator == CONV['close']):
+            varType = self.popType()
+            if (varType == CONV['file']):
+                operand = self.popOperand()
+                self.quads.append(Quadruple(operator, None, None, operand))
+                self.printStacks()
+            else:
+                print("ERROR: Only files can be closed")
+                exit()
+        self.quadPointer += 1
+
+    def assignSpFunc(self):
+        operator = self.popOperator()
+        var  = self.popOperand()
+        self.popType()
+        varType = self.popType()
+
+        if (varType == CONV['file']):
+            self.quads.append(Quadruple(operator, var, None, self.temp))
+            self.temp += 1
+            self.quadPointer += 1
+        else:
+            print("ERROR: Var type must be file")
+            exit()
+
+    def generateCryptoFunc(self):
+        operator = self.popOperator()
+        try:
+            operand = self.popOperand()
+            self.quads.append(Quadruple(operator, None, operand, self.temp))
+        except IndexError:
+            self.quads.append(Quadruple(operator, None, None, self.temp))
+        self.temp += 1
+        self.quadPointer += 1
+
+    # <GOTOs>
+    def generateGotoV(self):
+        operator = self.popOperator()
+        prevRes = self.popOperand()
+        self.popType() # Pop the matching type to the operand
+        print("goto")
+
+    def generateGotoF(self):
+        # Variables used to generate to gotoF quad
+        operator = self.popOperator()
+        prevRes = self.popOperand()
+        self.popType() # Pop the matching type to the operand
+
+        self.quads.append(Quadruple(operator,prevRes, None, 11))
+        self.quadPointer += 1
+
+    def generateGoto(self):
+        operator = self.popOperator()
+        self.quads.append(Quadruple(operator,None, None, 11))
+        self.quadPointer += 1
+
+    def fillGotoF(self):
+        quadToFill = self.popJump()
+        self.quads[quadToFill].temp = self.quadPointer - 1
+
+    def fillGotoFAlt(self):
+        quadToFill = self.popJump()
+        self.quads[quadToFill].temp = self.quadPointer 
+
+
+    def fillGoto(self):
+        quadToFill = self.popJump() 
+        self.quads[quadToFill].temp = self.quadPointer - 1
+
+    def insertEndfunc(self):
+        # operator = CONV['endfunc']
+        self.quads.append(Quadruple(CONV['endfunc'], None, None, None))
         self.quadPointer += 1
