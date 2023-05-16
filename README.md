@@ -26,3 +26,8 @@ con paréntesis y guardarlas en la variable. Las funciones especiales también e
 Por el momento me falta validar que la variable en la que se guarda exista la información, poder asignar
 un valor a una variable de un arreglo y lo que correspondía para esta semana, ciclos y condiciones. Espero
 para la siguiente entrega finalmente ponerme al corriente.
+
+## Avance 5 14/05/23
+En este avance terminé cuádruplos que tenía pendientes, tales como los de mis funciones especiales. Además
+logré generar los cuádruplos para el if y el ciclo while. El ciclo for todavía requiere trabajo y las funciones
+no logré empezarlas.
