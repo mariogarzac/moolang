@@ -44,7 +44,6 @@ def p_insert_endfunc(p):
     insert_endfunc : empty
     '''
     quads.insertEndfunc()
-    
 
 def p_prog_1(p):
     '''
@@ -252,7 +251,7 @@ def p_for_loop_1(p):
 # while loops
 def p_while_loop(p):
     '''
-    while_loop : WHILE LPAREN exp push_jump insert_v_goto RPAREN LCURLY block RCURLY insert_goto fill_goto fill_gotov
+    while_loop : WHILE LPAREN exp push_jump push_jump insert_f_goto RPAREN LCURLY block RCURLY insert_goto fill_gotof push_jump fill_goto
     '''
 
 # standard functions
@@ -329,28 +328,28 @@ def p_close_file(p):
 # cryptography functions
 def p_generate_key_func(p):
     '''
-    generate_key_func : GENERATE_KEY get_func_id LPAREN RPAREN insert_file_func 
+    generate_key_func : GENERATE_KEY get_func_id LPAREN RPAREN insert_crypto_func 
     '''
 
 def p_encrypt_func(p):
     '''
-    encrypt_func : ENCRYPT get_func_id LPAREN encrypt_func_1 COMMA ID RPAREN insert_crypto_func
+    encrypt_func : ENCRYPT get_func_id LPAREN encrypt_func_1 COMMA ID push_to_operand_stack RPAREN insert_crypto_func
     '''
 
 def p_encrypt_func_1(p):
     '''
-    encrypt_func_1 : CTE_CHAR push_to_operand_stack
+    encrypt_func_1 : CTE_CHAR push_string_operand
                    | ID push_to_operand_stack
     '''
 
 def p_decrypt_func(p):
     '''
-    decrypt_func : DECRYPT get_func_id LPAREN decrypt_func_1 COMMA ID RPAREN insert_crypto_func
+    decrypt_func : DECRYPT get_func_id LPAREN decrypt_func_1 COMMA ID push_to_operand_stack RPAREN insert_crypto_func
     '''
 
 def p_decrypt_func_1(p):
     '''
-    decrypt_func_1 : CTE_CHAR push_to_operand_stack
+    decrypt_func_1 : CTE_CHAR push_string_operand
                    | ID push_to_operand_stack
     '''
 
@@ -361,8 +360,8 @@ def p_hash_sha_256(p):
 
 def p_hash_sha_256_1(p):
     '''
-    hash_sha_256_1 : CTE_CHAR
-                   | ID
+    hash_sha_256_1 : CTE_CHAR push_string_operand
+                   | ID push_to_operand_stack  
     '''
 
 def p_hash_md5(p):
@@ -372,8 +371,8 @@ def p_hash_md5(p):
 
 def p_hash_md5_1(p):
     '''
-    hash_md5_1 : CTE_CHAR
-               | ID
+    hash_md5_1 : CTE_CHAR push_string_operand
+               | ID push_to_operand_stack  
     '''
 
 # expressions
@@ -443,8 +442,8 @@ def p_term_1(p):
 def p_factor(p):
     '''
     factor : LPAREN insert_lparen exp solve_paren RPAREN 
-           | CTE_INT push_to_operand_stack
-           | CTE_FLOAT push_to_operand_stack
+           | CTE_INT push_int_operand
+           | CTE_FLOAT push_float_operand
            | variable
            | std_func
     '''
@@ -505,6 +504,9 @@ def p_assign_sp_func(p):
     '''
     assign_sp_func : empty
     '''
+    ops = ['generate_key', 'hash_md5', 'hash_sha256']
+    if (currFuncId in ops):
+        quads.insertOpAndType(CONV[currFuncId], CONV['char'])
     quads.assignSpFunc()
 
 ## FUNCS------------------------------------------------------------------------
@@ -537,7 +539,7 @@ def p_insert_crypto_func(p):
     '''
     global currFuncId
     quads.insertOperator(CONV[currFuncId])
-    quads.generateSpFunc()
+    quads.generateCryptoFunc()
 
 def p_insert_file_func(p):
     '''
@@ -570,13 +572,25 @@ def p_push_to_operand_stack(p):
     '''
     push_to_operand_stack : empty
     '''
+    quads.insertOpAndType(p[-1], FD.getVarType(p[-1]))
 
-    if (type(p[-1]) is float):
-        quads.insertOpAndType(p[-1], CONV['float'])
-    elif(type(p[-1]) is int):
-        quads.insertOpAndType(p[-1], CONV['int'])
-    else:
-        quads.insertOpAndType(p[-1], FD.getVarType(p[-1]))
+def p_push_float_operand(p):
+    '''
+    push_float_operand : empty
+    '''
+    quads.insertOpAndType(p[-1], CONV['float'])
+
+def p_push_int_operand(p):
+    '''
+    push_int_operand : empty
+    '''
+    quads.insertOpAndType(p[-1], CONV['int'])
+
+def p_push_string_operand(p):
+    '''
+    push_string_operand : empty
+    '''
+    quads.insertOpAndType(p[-1], CONV['char'])
  
 def p_solve_m_exp(p):
     '''
@@ -637,13 +651,6 @@ def p_push_jump(p):
     '''
     quads.insertJump()
 
-def p_insert_v_goto(p):
-    '''
-    insert_v_goto : empty 
-    '''
-    quads.insertOperator(CONV['gotov'])
-    quads.generateGotoV()
-
 def p_insert_f_goto(p):
     '''
     insert_f_goto : empty
@@ -657,12 +664,6 @@ def p_insert_goto(p):
     '''
     quads.insertOperator(CONV['goto'])
     quads.generateGoto()
-
-def p_fill_gotov(p):
-    '''
-    fill_gotov : empty
-    '''
-    print("")
 
 def p_fill_gotof(p):
     '''
@@ -687,7 +688,6 @@ def p_fill_goto(p):
     '''
     quads.fillGoto()
 
-
 # ------------------------------------------------------------------------------
 def p_empty(p):
 	'''
@@ -701,6 +701,7 @@ def p_error(p):
         print(f"Syntax error at line {p.lineno}: unexpected {p.value}")
     else:
         print("Syntax error: unexpected end of input")
+    exit()
 
 
 # ------------------------------------------------------------------------------
@@ -710,4 +711,6 @@ with open('Tests/simple.moo', 'r') as file:
 
     parser = yacc.yacc()
     result = parser.parse(data)
+print("-----------QUADS-----------")
 quads.printTheQuads()
+print("---------------------------")
