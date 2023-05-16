@@ -58,7 +58,7 @@ class FunctionDirectory:
         try:
             return self.funcDirectory[self.funcCounter]["fVars"][id]["vType"]
         except KeyError:
-            print("ERROR: Variable does not exist")
+            print(f"ERROR: Variable {varId} does not exist")
             exit()
     
 
