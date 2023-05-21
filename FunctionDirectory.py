@@ -1,13 +1,6 @@
 import pprint as p
 import json 
 
-
-'''
-TODO:
-    - Fix varaibles not appending to dict
-    - Fix params not appending 
-'''
-
 class Variable:
     def __init__ (self):
         self.varAttributes = {}
@@ -31,10 +24,13 @@ class FunctionDirectory:
         self.funcDirectory = {self.funcCounter: {"fName": 0, "fType" : 0, "fParams": {}, "fVars" : {} } }
 
     def addFunc(self, funcId, funcType):
-        # funcParams is a dictionary
-        # funcVars is a dictionary
-        self.funcCounter += 1
+        for i in range(0,self.funcCounter + 1):
+            if funcId == self.funcDirectory[i]["fName"]:
+                if funcType == self.funcDirectory[i]["fType"]:
+                    print(f"ERROR: Function {funcId} with type {funcType} has already been declared")
+                    exit()
 
+        self.funcCounter += 1
         self.funcDirectory[self.funcCounter] = {}
         self.funcDirectory[self.funcCounter]["fName"] = funcId
         self.funcDirectory[self.funcCounter]["fType"] = funcType
@@ -45,6 +41,7 @@ class FunctionDirectory:
         self.funcDirectory[self.funcCounter]["fParams"].update({paramId : paramType})
 
     def addVariable(self, newVar):
+        # get var id from newvar dictionary 
         varId = list(newVar.keys())[0]
         self.funcDirectory[self.funcCounter]["fVars"][varId] = {}
         self.funcDirectory[self.funcCounter]["fVars"][varId].update(newVar[varId])
@@ -61,6 +58,5 @@ class FunctionDirectory:
             print(f"ERROR: Variable {varId} does not exist")
             exit()
     
-
     def printFuncDir(self):
         print(json.dumps(self.funcDirectory, indent=4, sort_keys=False))
