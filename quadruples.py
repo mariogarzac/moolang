@@ -11,8 +11,12 @@ class Quadruple:
 
     def printContents(self):
         #pretty print op
-        operator = (list(CONV.keys())[list(CONV.values()).index(self.operator)]) 
-        print(f"{operator} {self.leftOperand} {self.rightOperand} {self.address}")
+        try:
+            operator = (list(CONV.keys())[list(CONV.values()).index(self.operator)]) 
+            print(f"{operator} {self.leftOperand} {self.rightOperand} {self.address}")
+        except ValueError:
+            print(f"{self.operator} {self.leftOperand} {self.rightOperand} {self.address}")
+
 
 class QuadrupleTable:
 
@@ -36,8 +40,7 @@ class QuadrupleTable:
         self.operatorStack.append(newOp)
 
     def insertJump(self):
-        # Subtract 1 because the pointer points to the next quad
-        self.jumpStack.append(self.quadPointer - 1)
+        self.jumpStack.append(self.quadPointer)
 
     # <POP POPS>
     def popOperator(self):
@@ -83,8 +86,8 @@ class QuadrupleTable:
             if (CUBE[leftType][rightType][operator]):
                 return CUBE[leftType][rightType][operator]
         except:
-            lT = (list(CONV.keys())[list(CONV.values()).index(leftType)])            
-            rT = (list(CONV.keys())[list(CONV.values()).index(rightType)])
+            lT = self.convertOp(leftType)
+            rT = self.convertOp(rightType)
             print(f"ERROR: TypeMismatch <{lT}, {rT}>")
             exit()
 
@@ -105,6 +108,9 @@ class QuadrupleTable:
         print("JUMPS",self.jumpStack)
         print("\n")
 
+    def convertOp(self, op):
+            return list(CONV.keys())[list(CONV.values()).index(op)]
+
     # QUADS---------------------------------------------------------------------
     # <HIT THE QUADS>
     def generateQuad(self):
@@ -113,23 +119,22 @@ class QuadrupleTable:
         leftType = self.popType()
         resType = self.checkTypeMismatch(leftType, rightType, operator)
 
-        if (operator != CONV['=']):
-            rightOperand = self.popOperand()
-            leftOperand = self.popOperand()
-
-            self.quads.append(Quadruple(operator, leftOperand, rightOperand, self.address))
-
-            self.address += 1
-
-            # After generating the quadruple, add the new value and type
-            self.insertOpAndType(self.address, resType)
-
-        else: # If operator is '='
+        if (operator == CONV['=']):
             res = self.popOperand()
             var = self.popOperand()
             self.quads.append(Quadruple(operator, res, None, var))
             # self.operandStack.append(var)
             # self.operandStack.append(res)
+        else:
+            rightOperand = self.popOperand()
+            leftOperand = self.popOperand()
+
+            self.address += 1
+            self.quads.append(Quadruple(operator, leftOperand, rightOperand, self.address))
+
+            # After generating the quadruple, add the new value and type
+            self.insertOpAndType(self.address, resType)
+
 
         self.quadPointer += 1
 
@@ -165,20 +170,29 @@ class QuadrupleTable:
         self.quadPointer += 1
 
     def assignSpFunc(self):
+        self.popType() # pop spfunc type
+
         operator = self.popOperator()
-        var  = self.popOperand()
-        self.popType()
+        spFunc  = self.popOperand()
         varType = self.popType()
+        var = self.popOperand()
+        ops = [CONV['generate_key'], CONV['hash_md5'], CONV['hash_sha256']]
     
-        if(operator == CONV['open']):
+        if(spFunc == CONV['open']):
             if (varType == CONV['file']):
-                self.quads.append(Quadruple(operator, var, None, self.address))
+                self.quads.append(Quadruple(operator, self.convertOp(spFunc), None, self.address))
                 self.address += 1
             else:
                 print("ERROR: Var type must be file")
                 exit()
-        else: 
-            self.quads.append(Quadruple(operator, None, None, var))
+        elif(spFunc in ops):
+            if (varType == CONV['char']):
+                self.quads.append(Quadruple(operator, self.address, None, var))
+                self.address += 1
+            else:
+                print("ERROR: Var must be type char")
+                exit()
+
         self.quadPointer += 1
 
     def generateCryptoFunc(self):
@@ -212,43 +226,109 @@ class QuadrupleTable:
         self.quadPointer += 1
 
     # <GOTOs>
-    def generateGotoF(self):
-        # Variables used to generate to gotoF quad
-        operator = self.popOperator()
-        prevRes = self.popOperand()
-        self.popType() # Pop the matching type to the operand
+    # FOR
+    def generateForQuad(self):
+        #validate types
+        varType = self.popType()
+        modType = self.popType()
+        expType = self.popType()
+        if (expType == CONV['bool']):
+            variable = self.popOperand()
+            modifier = self.popOperand()
+            rLimit = self.popOperand()
+            operator= self.popOperator()
 
-        self.quads.append(Quadruple(operator,prevRes - 1, None, None))
-        self.quadPointer += 1
+            if (varType == modType):
+                # initialize variable
+                self.quads.append(Quadruple(operator, self.address, None, variable))
+                self.insertJump()
+                self.quadPointer += 1
+                self.address += 1
+
+                # create gotof quadruple
+                self.quads.append(Quadruple(CONV['gotof'],self.address - 2 , None, None))
+                self.insertJump()
+                self.quadPointer += 1
+                self.address += 1
+            else: 
+                print(f"ERROR: Control variable is type {self.convertOp(varType)} and modifier is type {self.convertOp(modType)}")
+                exit()
+
+            self.quadPointer += 1
+        else:
+            print(f"ERROR: For loop parameters must be of type int") 
+            exit()
+
+    def generateForCounter(self):
+        valueType = self.popType()
+        varType = self.popType()
+        operator = self.popOperator()
+        if (self.checkTypeMismatch(valueType, varType, operator)):
+            variable = self.popOperand()
+            value = self.popOperand()
+            self.quads.append(Quadruple(operator,value, None, variable))
+
+    def fillGotoFor(self):
+        quadToFill = self.popJump() -1 
+        forGoto = self.popJump()
+        self.quads[quadToFill - 1].address = forGoto
+
+    def fillFGotoFor(self):
+        quadToFill = self.popJump()
+        self.quads[quadToFill].address = len(self.quads) + 1
+
+    def moveCounterQuads(self):
+        # Get quad numbers
+        expression = self.popJump()
+        assignment = expression - 1
+
+        # Pop quads
+        expQuad = self.quads.pop(expression)
+        assignmentQuad = self.quads.pop(assignment)
+        
+        # # Insert quads into new position
+        newPosition = len(self.quads)
+        self.quads.insert(newPosition, expQuad)
+        self.quads.insert(newPosition, assignmentQuad)
+
+    # IF
+    def fillGotoF(self):
+        quadToFill = self.popJump()
+        self.quads[quadToFill].address = self.quadPointer - 1
+
+    def fillGotoFAlt(self):
+        quadToFill = self.popJump()
+        self.quads[quadToFill].address = self.quadPointer
+
+    def fillGoto(self):
+        quadToFill = self.popJump() - 1
+        self.quads[quadToFill].address = self.quadPointer -1
+
+    # WHILE
+    def fillGotoWhile(self):
+        quadToFill = self.popJump() - 1
+        whileGoto = self.popJump() - 1
+        self.quads[quadToFill - 1].address = whileGoto
 
     def generateGoto(self):
         operator = self.popOperator()
         self.quads.append(Quadruple(operator,None, None, None))
         self.quadPointer += 1
 
-    def fillGotoF(self):
-        quadToFill = self.popJump()
-        try:
-            self.quads[quadToFill].address = self.quadPointer
-        except IndexError:
-            self.quads[quadToFill - 1].address = self.quadPointer
+    def generateGotoF(self):
+        resType = self.popType()
+        if (resType == CONV['bool']):
+            operator = self.popOperator()
+            prevRes = self.popOperand()
+            self.quads.append(Quadruple(operator,prevRes -1 , None, None))
+            self.quadPointer += 1
+        else:
+            print(f"ERROR: Expression type must be of type bool, not {self.convertOp(resType)}.")
+            exit()
 
-    def fillGotoFAlt(self):
-        print("ENTRE en", self.quadPointer)
-        quadToFill = self.popJump()
-        self.quads[quadToFill].address = self.quadPointer 
 
-    def fillGoto(self):
-        quadToFill = self.popJump() 
-        try: 
-            print("por aquí")
-            whileGoto = self.popJump()
-            self.quads[quadToFill].address = whileGoto - 1
-        except IndexError:
-            print("por aca")
-            print("quad numbber ", self.quadPointer)
-            self.quads[quadToFill].address = self.quadPointer - 1
+    # def generateForCounter(self, variable, modifier):
+    #     self.quads.append(Quadruple())
 
-    def insertEndfunc(self):
-        # operator = CONV['endfunc']
+    def generateEndfunc(self):
         self.quads.append(Quadruple(CONV['endfunc'], None, None, None))
