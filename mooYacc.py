@@ -1,3 +1,4 @@
+import os
 '''
 TODO:
     - func calls with two params
@@ -36,14 +37,14 @@ FD = FD()
 # program start
 def p_prog(p):
     '''
-    prog : prog_1 prog_2 MAIN LPAREN RPAREN LCURLY block insert_endfunc RCURLY 
+    prog : prog_1 prog_2 MAIN LPAREN RPAREN LCURLY block generate_endfunc RCURLY 
     '''
 
-def p_insert_endfunc(p):
+def p_generate_endfunc(p):
     '''
-    insert_endfunc : empty
+    generate_endfunc : empty
     '''
-    quads.insertEndfunc()
+    quads.generateEndfunc()
 
 def p_prog_1(p):
     '''
@@ -197,7 +198,7 @@ def p_variable_2(p):
 # read user input
 def p_c_input(p):
     '''
-    c_input : INPUT variable c_input_1 
+    c_input : INPUT push_to_operator_stack variable c_input_1 
     '''
 
 def p_c_input_1(p):
@@ -227,31 +228,33 @@ def p_c_print_2(p):
 # conditionals 
 def p_condition(p):
     '''
-    condition : IF LPAREN exp push_jump insert_f_goto RPAREN LCURLY block RCURLY condition_1 fill_gotof
+    condition : IF LPAREN push_jump exp insert_f_goto RPAREN LCURLY block RCURLY condition_1 fill_gotof
     '''
 
 def p_condition_1(p):
     '''
-    condition_1 : fill_gotof_alt push_jump insert_goto ELSE LCURLY block RCURLY fill_goto
+    condition_1 : fill_gotof_alt push_jump insert_goto ELSE LCURLY block RCURLY fill_goto 
                 | empty
     '''
 
 # for loops
 def p_for_loop(p):
     '''
-    for_loop : FOR ID EQUAL exp IN RANGE LPAREN exp COMMA exp for_loop_1 RPAREN LCURLY block RCURLY
+    for_loop : FOR push_jump LPAREN for_loop_1 assign_counter COMMA exp COMMA for_loop_1 RPAREN insert_f_goto_for\
+            LCURLY block RCURLY fill_f_goto_for move_counter_quads insert_goto push_jump fill_goto_for 
     '''
 
 def p_for_loop_1(p):
     '''
-    for_loop_1 : COMMA ID EQUAL exp
-               | empty
+    for_loop_1 : ID EQUAL exp 
     '''
+    quads.insertOpAndType(p[1], FD.getVarType(p[1]))
+    quads.insertOperator(CONV['='])
 
 # while loops
 def p_while_loop(p):
     '''
-    while_loop : WHILE LPAREN exp push_jump push_jump insert_f_goto RPAREN LCURLY block RCURLY insert_goto fill_gotof push_jump fill_goto
+    while_loop : WHILE LPAREN push_jump exp push_jump insert_f_goto RPAREN LCURLY block RCURLY insert_goto fill_gotof push_jump fill_goto_while
     '''
 
 # standard functions
@@ -645,6 +648,13 @@ def p_solve_paren(p):
     quads.popParen()
 
 ## GOTOs------------------------------------------------------------------------
+
+def p_fill_f_goto_for(p):
+    '''
+    fill_f_goto_for : empty
+    '''
+    quads.fillFGotoFor()
+
 def p_push_jump(p):
     '''
     push_jump : empty
@@ -669,6 +679,8 @@ def p_fill_gotof(p):
     '''
     fill_gotof : empty
     '''
+    # Check to see if it was already filled by the else statement
+    # This only applies to if statement
     global fill
     if (fill):
         quads.fillGotoF()
@@ -688,6 +700,35 @@ def p_fill_goto(p):
     '''
     quads.fillGoto()
 
+def p_fill_goto_while(p):
+    '''
+    fill_goto_while : empty
+    '''
+    quads.fillGotoWhile()
+    
+def p_fill_goto_for(p):
+    '''
+    fill_goto_for : empty
+    '''
+    quads.fillGotoFor()
+
+def p_insert_f_goto_for(p): 
+    '''
+    insert_f_goto_for : empty
+    '''
+    quads.generateForQuad()
+
+def p_assign_counter(p):
+    '''
+    assign_counter : empty
+    '''
+    quads.generateForCounter()
+
+def p_move_counter_quads(p):
+    '''
+    move_counter_quads : empty
+    '''
+    quads.moveCounterQuads()
 # ------------------------------------------------------------------------------
 def p_empty(p):
 	'''
@@ -706,11 +747,24 @@ def p_error(p):
 
 # ------------------------------------------------------------------------------
 # try:
-with open('Tests/simple.moo', 'r') as file:
-    data = file.read()
+parser = yacc.yacc()
+directory = 'Tests/'
+for filename in os.listdir(directory):
+    if filename.endswith(".moo"):  # Change the extension as needed
+        file_path = os.path.join(directory, filename)
+        with open(file_path, 'r') as file:
+            data = file.read()
 
-    parser = yacc.yacc()
-    result = parser.parse(data)
-print("-----------QUADS-----------")
-quads.printTheQuads()
-print("---------------------------")
+            result = parser.parse(data)
+            print("-----------QUADS-----------")
+            quads.printTheQuads()
+            print("---------------------------")
+
+# with open('Tests/loops.moo', 'r') as file:
+#     data = file.read()
+#
+#     parser = yacc.yacc()
+#     result = parser.parse(data)
+# print("-----------QUADS-----------")
+# quads.printTheQuads()
+# print("---------------------------")
