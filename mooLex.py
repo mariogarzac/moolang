@@ -67,6 +67,7 @@ reserved = {
     'if' : 'IF',
     'else' : 'ELSE',
     'print' : 'PRINT',
+    'input' : 'INPUT',
     'and' : 'AND',
     'or' : 'OR',
     'int' : 'INT',
