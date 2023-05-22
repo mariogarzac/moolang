@@ -138,6 +138,32 @@ class QuadrupleTable:
 
         self.quadPointer += 1
 
+    def generateStFunc(self):
+        '''
+        TODO: Validate vartypes with input types
+        '''
+        operator = self.popOperator()
+        if (operator == CONV['print']):
+            self.popType() # Pop the type since it is not need for the print stmnt... at the moment
+            operand = self.popOperand()
+            self.quads.append(Quadruple(operator, None, None, operand))
+        elif (operator == CONV['input']):
+            operand = self.popOperand()
+            self.quads.append(Quadruple(operator, None, operand, self.address))
+            self.address += 1
+
+            operator = self.popOperator()
+        self.quadPointer += 1
+
+    def assignInput(self):
+        operator = CONV['=']#self.popOperator()
+        inputType = self.popType()
+        varType = self.popType()
+        var = self.popOperand()
+        self.checkTypeMismatch(varType, inputType, operator)
+        self.quads.append(Quadruple(operator, self.address - 1, None, var))
+
+
     # <SPECIAL FUNCS>
     def generateFileFunc(self):
         operator = self.popOperator()
@@ -326,9 +352,15 @@ class QuadrupleTable:
             print(f"ERROR: Expression type must be of type bool, not {self.convertOp(resType)}.")
             exit()
 
-
-    # def generateForCounter(self, variable, modifier):
-    #     self.quads.append(Quadruple())
-
     def generateEndfunc(self):
         self.quads.append(Quadruple(CONV['endfunc'], None, None, None))
+
+    # DEBUGGING
+    def clearQuads(self):
+        self.typeStack = []
+        self.operandStack = []
+        self.operatorStack = []
+        self.jumpStack = []
+        self.quads = []
+        self.quadPointer = 1
+        self.address = 0
