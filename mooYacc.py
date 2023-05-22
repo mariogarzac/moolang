@@ -17,6 +17,7 @@ from cube import CONV
 ## Global Variables-------------------------------------------------------------
 
 currId = ""
+currStmntId = ""
 currFuncId = ""
 currType = 1
 currScope = 21
@@ -174,6 +175,7 @@ def p_assignment_1(p):
     '''
     assignment_1 : exp assign_var SEMICOL
                  | sp_func assign_sp_func
+                 | c_input assign_input
     '''
 
 # accesing variables
@@ -198,25 +200,30 @@ def p_variable_2(p):
 # read user input
 def p_c_input(p):
     '''
-    c_input : INPUT push_to_operator_stack variable c_input_1 
+    c_input : INPUT get_stmnt_id push_print_and_input LPAREN exp RPAREN generate_st_func
     '''
 
 def p_c_input_1(p):
     '''
-    c_input_1 : COMMA variable c_input_1
+    c_input_1 : exp c_input_2 push_print_and_input 
+    '''
+
+def p_c_input_2(p):
+    '''
+    c_input_2 : COMMA c_input_1
               | empty
     '''
 
 # print to console
 def p_c_print(p):
     '''
-    c_print : PRINT LPAREN c_print_1 RPAREN
+    c_print : PRINT get_stmnt_id LPAREN c_print_1 RPAREN 
     '''
 
 def p_c_print_1(p):
     '''
-    c_print_1 : exp c_print_2 
-              | CTE_CHAR c_print_2
+    c_print_1 : exp c_print_2 push_print_and_input generate_st_func  
+              | CTE_CHAR push_string_operand c_print_2 push_print_and_input generate_st_func  
     '''
 
 def p_c_print_2(p):
@@ -224,7 +231,6 @@ def p_c_print_2(p):
     c_print_2 : COMMA c_print_1
               | empty
     '''
-
 # conditionals 
 def p_condition(p):
     '''
@@ -467,6 +473,13 @@ def p_get_id(p):
     '''
     global currId
     currId = p[-1]
+
+def p_get_stmnt_id(p):
+    '''
+    get_stmnt_id : empty
+    '''
+    global currStmntId
+    currStmntId = p[-1]
     
 def p_get_func_id(p):
     '''
@@ -511,6 +524,18 @@ def p_assign_sp_func(p):
     if (currFuncId in ops):
         quads.insertOpAndType(CONV[currFuncId], CONV['char'])
     quads.assignSpFunc()
+
+def p_assign_input(p):
+    '''
+    assign_input : empty
+    '''
+    quads.assignInput()
+
+def p_generate_st_func(p):
+    '''
+    generate_st_func : empty
+    '''
+    quads.generateStFunc()
 
 ## FUNCS------------------------------------------------------------------------
 def p_create_func(p):
@@ -570,6 +595,12 @@ def p_push_to_operator_stack(p):
     push_to_operator_stack : empty
     '''
     quads.insertOperator(CONV[p[-1]])
+
+def p_push_print_and_input(p):
+    '''
+    push_print_and_input : empty
+    '''
+    quads.insertOperator(CONV[currStmntId])
 
 def p_push_to_operand_stack(p):
     '''
@@ -746,12 +777,13 @@ def p_error(p):
 
 
 # ------------------------------------------------------------------------------
-# try:
+
 parser = yacc.yacc()
 directory = 'Tests/'
 for filename in os.listdir(directory):
     if filename.endswith(".moo"):  # Change the extension as needed
         file_path = os.path.join(directory, filename)
+        print(file_path)
         with open(file_path, 'r') as file:
             data = file.read()
 
@@ -759,12 +791,9 @@ for filename in os.listdir(directory):
             print("-----------QUADS-----------")
             quads.printTheQuads()
             print("---------------------------")
+            quads.clearQuads()
+            V.clearV()
+            FD.clearFD()
+            print("\n")
 
-# with open('Tests/loops.moo', 'r') as file:
-#     data = file.read()
-#
-#     parser = yacc.yacc()
-#     result = parser.parse(data)
-# print("-----------QUADS-----------")
-# quads.printTheQuads()
-# print("---------------------------")
+
