@@ -14,6 +14,9 @@ class Variable:
     def printVars(self):
         print(self.varAttributes)
 
+    def clearV(self):
+        self.varAttributes = {}
+
 class FunctionDirectory:
 
     def __init__ (self):
@@ -52,11 +55,26 @@ class FunctionDirectory:
 
     def getVarType(self, varId):
         id = str(varId)
+        # find in local scope
         try:
             return self.funcDirectory[self.funcCounter]["fVars"][id]["vType"]
+            # find in global scope
+            try:
+                return self.funcDirectory[0]["fVars"][id]["vType"]
+            except KeyError:
+                pass
         except KeyError:
             print(f"ERROR: Variable {varId} does not exist")
             exit()
-    
+
     def printFuncDir(self):
         print(json.dumps(self.funcDirectory, indent=4, sort_keys=False))
+
+    # DEBUGGING
+    def clearFD(self):
+        self.funcCounter = 0
+        self.funcDirectory = {}
+        self.funcDirectory = {self.funcCounter: {"fName": 0, "fType" : 0, "fParams": {}, "fVars" : {} } }
+
+
+
