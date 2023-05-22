@@ -42,7 +42,9 @@ CONV = {
     'hash_md5' :     32,
     'hash_sha256' :  33, 
     'generate_key':  34,
-    'endfunc':       35
+    'print':         35,
+    'input':         36,
+    'endfunc':       37
 }
 
 
