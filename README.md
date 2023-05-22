@@ -31,3 +31,7 @@ para la siguiente entrega finalmente ponerme al corriente.
 En este avance terminé cuádruplos que tenía pendientes, tales como los de mis funciones especiales. Además
 logré generar los cuádruplos para el if y el ciclo while. El ciclo for todavía requiere trabajo y las funciones
 no logré empezarlas.
+
+## Avance 6 21/05/23
+Para este avance terminé cuádruplos que tenía pendientes y el cuádruplo para el ciclo for. Inicié las funciones, sin
+embargo no están completas todavía. Para el caso de la memoria virtual, solo lo tengo en concepto, pero falta la implementación.
