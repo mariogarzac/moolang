@@ -1,5 +1,5 @@
 var float y,z;
- var int a,b, d, c, f, g, h , i;
+var int a,b, d, c, f, g, h , i;
 var file arch;
 var int x;
 var char key, md5, sha;

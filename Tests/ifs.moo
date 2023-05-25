@@ -24,6 +24,12 @@ main(){
        hash_md5(arch)
    
       }
+
+    if (z -lt y){
+        print("hi")
+    }else{
+        print("hello")
+        }
 }
 
 
