@@ -38,8 +38,20 @@ FD = FD()
 # program start
 def p_prog(p):
     '''
-    prog : prog_1 prog_2 MAIN LPAREN RPAREN LCURLY block generate_endfunc RCURLY 
+    prog : insert_goto_main prog_1 prog_2 fill_goto_main MAIN LPAREN RPAREN LCURLY prog_1 block generate_endfunc RCURLY 
     '''
+
+def p_insert_goto_main(p):
+    '''
+    insert_goto_main : empty
+    '''
+    quads.generateGotoMain()
+
+def p_fill_goto_main(p):
+    '''
+    fill_goto_main : empty
+    '''
+    quads.fillGotoMain()
 
 def p_generate_endfunc(p):
     '''
@@ -67,9 +79,9 @@ def p_dec_vars(p):
 
 def p_dec_vars_1(p):
     '''
-    dec_vars_1 : smp_type ID get_id LBRACKET CTE_INT get_xdims RBRACKET dec_vars_3 add_variable reset_dims  SEMICOL dec_vars_4
-               | smp_type ID get_id add_variable dec_vars_2 SEMICOL add_variable dec_vars_4
-               | sp_type ID get_id dec_vars_2 SEMICOL add_variable dec_vars_4
+    dec_vars_1 : smp_type ID get_id LBRACKET CTE_INT get_xdims RBRACKET dec_vars_3 add_variable reset_dims SEMICOL dec_vars_4
+               | smp_type ID get_id add_variable dec_vars_2 SEMICOL dec_vars_4
+               | sp_type ID get_id add_variable  dec_vars_2 SEMICOL dec_vars_4
     '''
 
 def p_dec_vars_2(p):
@@ -111,7 +123,7 @@ def p_sp_type(p):
 # functions
 def p_function(p):
     '''
-    function : FUNC ID get_id LPAREN param RPAREN ARROW function_2 create_func LCURLY function_1 block RCURLY
+    function : FUNC ID get_func_id LPAREN param RPAREN ARROW function_2 create_func update_func_dir LCURLY function_1 block RCURLY generate_endfunc
     '''
 
 def p_function_1(p):
@@ -126,8 +138,8 @@ def p_function_2(p):
                | VOID
     '''
     global currType
-    if (currType == 'void'):
-        currType = CONV[p[1]]
+    if (p[1] == 'void'):
+        currType = CONV['void']
     else:
         pass
 
@@ -200,19 +212,19 @@ def p_variable_2(p):
 # read user input
 def p_c_input(p):
     '''
-    c_input : INPUT get_stmnt_id push_print_and_input LPAREN exp RPAREN generate_st_func
+    c_input : INPUT get_stmnt_id push_print_and_input LPAREN RPAREN generate_st_func
     '''
 
-def p_c_input_1(p):
-    '''
-    c_input_1 : exp c_input_2 push_print_and_input 
-    '''
-
-def p_c_input_2(p):
-    '''
-    c_input_2 : COMMA c_input_1
-              | empty
-    '''
+# def p_c_input_1(p):
+#     '''
+#     c_input_1 : exp c_input_2 push_print_and_input 
+#     '''
+#
+# def p_c_input_2(p):
+#     '''
+#     c_input_2 : COMMA c_input_1
+#               | empty
+#     '''
 
 # print to console
 def p_c_print(p):
@@ -260,14 +272,21 @@ def p_for_loop_1(p):
 # while loops
 def p_while_loop(p):
     '''
-    while_loop : WHILE LPAREN push_jump exp push_jump insert_f_goto RPAREN LCURLY block RCURLY insert_goto fill_gotof push_jump fill_goto_while
+    while_loop : WHILE LPAREN push_jump exp push_jump insert_f_goto RPAREN LCURLY block RCURLY insert_goto fill_gotof_while push_jump fill_goto_while
     '''
 
 # standard functions
 def p_std_func(p):
     '''
-    std_func : ID LPAREN std_func_1 RPAREN 
+    std_func : ID push_func_id LPAREN std_func_1 push_func_params generate_func_call RPAREN 
     '''
+
+def p_push_func_params(p):
+    '''
+    push_func_params : empty
+    '''
+    quads.insertParamTypes(FD.getFuncParams())
+
 
 def p_std_func_1(p):
     '''
@@ -292,7 +311,7 @@ def p_sp_func(p):
 # return for functions
 def p_return_func(p):
     '''
-    return_func : RETURN exp SEMICOL
+    return_func : RETURN push_to_operator_stack exp generate_return SEMICOL
     '''
 
 # file functions
@@ -520,10 +539,10 @@ def p_assign_sp_func(p):
     '''
     assign_sp_func : empty
     '''
-    ops = ['generate_key', 'hash_md5', 'hash_sha256']
+    ops = ['open', 'generate_key', 'hash_md5', 'hash_sha256']
     if (currFuncId in ops):
-        quads.insertOpAndType(CONV[currFuncId], CONV['char'])
-    quads.assignSpFunc()
+        quads.insertOperator(CONV[currFuncId])
+        quads.assignSpFunc()
 
 def p_assign_input(p):
     '''
@@ -542,8 +561,8 @@ def p_create_func(p):
     '''
     create_func : empty
     '''
-    global currId, currType
-    FD.addFunc(currId, currType)
+    global currFuncId, currType
+    FD.addFunc(currFuncId, currType)
 
 def p_add_param(p):
     '''
@@ -559,6 +578,32 @@ def p_add_variable(p):
     global currType, currId, currScope, currXDims, currYDims
     tmpVar = V.addVar(currId, currType, currScope, 0, currXDims, currYDims)
     FD.addVariable(tmpVar)
+
+def p_generate_return(p):
+    '''
+    generate_return : empty
+    '''
+    quads.insertFuncType(FD.getFuncType())
+    quads.generateReturn()
+
+def p_generate_func_call(p):
+    '''
+    generate_func_call : empty
+    '''
+    quads.generateFuncCall()
+
+def p_push_func_id(p):
+    '''
+    push_func_id : empty
+    '''
+    quads.insertOpAndType(p[-1], FD.getFuncType())
+
+def p_update_fund_dir(p):
+    '''
+    update_func_dir : empty
+    '''
+    FD.updateFuncDir(quads.getQuadPointer())
+
 
 ## SP FUNCS---------------------------------------------------------------------
 def p_insert_crypto_func(p):
@@ -705,6 +750,12 @@ def p_insert_goto(p):
     '''
     quads.insertOperator(CONV['goto'])
     quads.generateGoto()
+
+def p_fill_gotof_while(p):
+    '''
+    fill_gotof_while : empty
+    '''
+    quads.fillGotoFWhile()
 
 def p_fill_gotof(p):
     '''
