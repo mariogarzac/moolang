@@ -44,7 +44,10 @@ CONV = {
     'generate_key':  34,
     'print':         35,
     'input':         36,
-    'endfunc':       37
+    'return':        38,
+    'main':          39,
+    'gosub':         40,
+    'endfunc':       41
 }
 
 
