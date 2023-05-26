@@ -19,8 +19,9 @@ from cube import CONV
 currId = ""
 currStmntId = ""
 currFuncId = ""
+currModuleId = ""
 currType = 1
-currScope = 21
+currScope = CONV['global']
 currXDims = 0
 currYDims = 0
 tmpDims = 0
@@ -38,7 +39,7 @@ FD = FD()
 # program start
 def p_prog(p):
     '''
-    prog : insert_goto_main prog_1 prog_2 fill_goto_main MAIN LPAREN RPAREN LCURLY prog_1 block generate_endfunc RCURLY 
+    prog : insert_goto_main prog_1 set_scope prog_2 fill_goto_main MAIN get_func_id create_main LPAREN RPAREN LCURLY prog_1 block generate_endfunc RCURLY 
     '''
 
 def p_insert_goto_main(p):
@@ -57,6 +58,13 @@ def p_generate_endfunc(p):
     '''
     generate_endfunc : empty
     '''
+    quads.generateEndfunc()
+
+def p_generate_func_endfunc(p):
+    '''
+    generate_func_endfunc : empty
+    '''
+    FD.clearVarTable()
     quads.generateEndfunc()
 
 def p_prog_1(p):
@@ -123,7 +131,7 @@ def p_sp_type(p):
 # functions
 def p_function(p):
     '''
-    function : FUNC ID get_func_id LPAREN param RPAREN ARROW function_2 create_func update_func_dir LCURLY function_1 block RCURLY generate_endfunc
+    function : FUNC ID get_func_id create_func LPAREN param RPAREN ARROW function_2 update_func_type update_func_dir LCURLY function_1 block RCURLY generate_func_endfunc
     '''
 
 def p_function_1(p):
@@ -137,7 +145,7 @@ def p_function_2(p):
     function_2 : smp_type
                | VOID
     '''
-    global currType
+    global currType, currFuncId
     if (p[1] == 'void'):
         currType = CONV['void']
     else:
@@ -195,7 +203,8 @@ def p_variable(p):
     '''
     variable : ID variable_1 
     '''
-    quads.insertOpAndType(p[1],FD.getVarType(p[1]))
+    global currScope
+    quads.insertOpAndType(p[1],FD.getVarType(currScope, p[1]))
 
 def p_variable_1(p):
     '''
@@ -243,62 +252,62 @@ def p_c_print_2(p):
     c_print_2 : COMMA c_print_1
               | empty
     '''
-# conditionals 
+# conditional
 def p_condition(p):
     '''
-    condition : IF LPAREN push_jump exp insert_f_goto RPAREN LCURLY block RCURLY condition_1 fill_gotof
+    condition : IF LPAREN exp RPAREN insert_f_goto LCURLY block RCURLY condition_1 fill_gotof
     '''
 
 def p_condition_1(p):
     '''
-    condition_1 : fill_gotof_alt push_jump insert_goto ELSE LCURLY block RCURLY fill_goto 
+    condition_1 : ELSE insert_goto_if LCURLY block RCURLY 
                 | empty
+    '''
+
+# while loops
+def p_while_loop(p):
+    '''
+    while_loop : WHILE LPAREN exp RPAREN push_jump insert_f_goto LCURLY block RCURLY insert_goto fill_gotof_while
     '''
 
 # for loops
 def p_for_loop(p):
     '''
-    for_loop : FOR push_jump LPAREN for_loop_1 assign_counter COMMA exp COMMA for_loop_1 RPAREN insert_f_goto_for\
-            LCURLY block RCURLY fill_f_goto_for move_counter_quads insert_goto push_jump fill_goto_for 
+    for_loop : FOR push_jump LPAREN for_loop_1 assign_counter COMMA exp COMMA for_loop_1 push_jump RPAREN insert_f_goto_for\
+               LCURLY block RCURLY fill_f_goto_for insert_goto move_counter_quads 
     '''
 
 def p_for_loop_1(p):
     '''
     for_loop_1 : ID EQUAL exp 
     '''
-    quads.insertOpAndType(p[1], FD.getVarType(p[1]))
+    global currScope
+    quads.insertOpAndType(p[1], FD.getVarType(currScope, p[1]))
     quads.insertOperator(CONV['='])
-
-# while loops
-def p_while_loop(p):
-    '''
-    while_loop : WHILE LPAREN push_jump exp push_jump insert_f_goto RPAREN LCURLY block RCURLY insert_goto fill_gotof_while push_jump fill_goto_while
-    '''
 
 # standard functions
 def p_std_func(p):
     '''
-    std_func : ID push_func_id LPAREN std_func_1 push_func_params generate_func_call RPAREN 
+    std_func : ID push_func_id LPAREN std_func_1 RPAREN generate_func_call 
     '''
-
-def p_push_func_params(p):
-    '''
-    push_func_params : empty
-    '''
-    quads.insertParamTypes(FD.getFuncParams())
-
 
 def p_std_func_1(p):
     '''
-    std_func_1 : exp std_func_2
+    std_func_1 : exp increment_param_counter std_func_2
                | empty
     '''
 
 def p_std_func_2(p):
     '''
-    std_func_2 : COMMA exp std_func_2
+    std_func_2 : COMMA exp increment_param_counter std_func_2
                | empty
     '''
+
+def p_increment_param_counter(p):
+    '''
+    increment_param_counter : empty
+    '''
+    quads.incrementParamCounter()
 
 # special functions
 def p_sp_func(p):
@@ -335,33 +344,33 @@ def p_crypto_func(p):
 # file manipulation
 def p_open_file(p):
     '''
-    open_file : OPEN get_func_id LPAREN CTE_CHAR insert_param RPAREN insert_file_func 
+    open_file : OPEN get_module_id LPAREN CTE_CHAR insert_param RPAREN insert_file_func 
     '''
 
 def p_read_file(p):
     '''
-    read_file : READ get_func_id LPAREN ID insert_file_id RPAREN insert_file_func 
+    read_file : READ get_module_id LPAREN ID insert_file_id RPAREN insert_file_func 
     '''
 
 def p_write_file(p):
     '''
-    write_file : WRITE get_func_id LPAREN CTE_CHAR insert_param COMMA ID insert_file_id RPAREN insert_file_func
+    write_file : WRITE get_module_id LPAREN CTE_CHAR insert_param COMMA ID insert_file_id RPAREN insert_file_func
     '''
 
 def p_close_file(p):
     '''
-    close_file : CLOSE get_func_id LPAREN ID insert_file_id RPAREN insert_file_func 
+    close_file : CLOSE get_module_id LPAREN ID insert_file_id RPAREN insert_file_func 
     '''
 
 # cryptography functions
 def p_generate_key_func(p):
     '''
-    generate_key_func : GENERATE_KEY get_func_id LPAREN RPAREN insert_crypto_func 
+    generate_key_func : GENERATE_KEY get_module_id LPAREN RPAREN insert_crypto_func 
     '''
 
 def p_encrypt_func(p):
     '''
-    encrypt_func : ENCRYPT get_func_id LPAREN encrypt_func_1 COMMA ID push_to_operand_stack RPAREN insert_crypto_func
+    encrypt_func : ENCRYPT get_module_id LPAREN encrypt_func_1 COMMA ID push_to_operand_stack RPAREN insert_crypto_func
     '''
 
 def p_encrypt_func_1(p):
@@ -372,7 +381,7 @@ def p_encrypt_func_1(p):
 
 def p_decrypt_func(p):
     '''
-    decrypt_func : DECRYPT get_func_id LPAREN decrypt_func_1 COMMA ID push_to_operand_stack RPAREN insert_crypto_func
+    decrypt_func : DECRYPT get_module_id LPAREN decrypt_func_1 COMMA ID push_to_operand_stack RPAREN insert_crypto_func
     '''
 
 def p_decrypt_func_1(p):
@@ -383,7 +392,7 @@ def p_decrypt_func_1(p):
 
 def p_hash_sha_256(p):
     '''
-    hash_sha_256 : HASH_SHA256 get_func_id LPAREN hash_sha_256_1 RPAREN insert_crypto_func
+    hash_sha_256 : HASH_SHA256 get_module_id LPAREN hash_sha_256_1 RPAREN insert_crypto_func
     '''
 
 def p_hash_sha_256_1(p):
@@ -394,7 +403,7 @@ def p_hash_sha_256_1(p):
 
 def p_hash_md5(p):
     '''
-    hash_md5 : HASH_MD5 get_func_id LPAREN hash_md5_1 RPAREN insert_crypto_func
+    hash_md5 : HASH_MD5 get_module_id LPAREN hash_md5_1 RPAREN insert_crypto_func
     '''
 
 def p_hash_md5_1(p):
@@ -484,7 +493,7 @@ def p_set_scope(p):
     set_scope : empty
     '''
     global currScope
-    currScope = 20
+    currScope = CONV['local']
 
 def p_get_id(p):
     '''
@@ -499,6 +508,13 @@ def p_get_stmnt_id(p):
     '''
     global currStmntId
     currStmntId = p[-1]
+
+def p_get_module_id(p):
+    '''
+    get_module_id : empty
+    '''
+    global currModuleId
+    currModuleId = p[-1]
     
 def p_get_func_id(p):
     '''
@@ -539,9 +555,10 @@ def p_assign_sp_func(p):
     '''
     assign_sp_func : empty
     '''
+    global currModuleId
     ops = ['open', 'generate_key', 'hash_md5', 'hash_sha256']
-    if (currFuncId in ops):
-        quads.insertOperator(CONV[currFuncId])
+    if (currModuleId in ops):
+        quads.insertOperator(CONV[currModuleId])
         quads.assignSpFunc()
 
 def p_assign_input(p):
@@ -564,45 +581,65 @@ def p_create_func(p):
     global currFuncId, currType
     FD.addFunc(currFuncId, currType)
 
+def p_create_main(p):
+    '''
+    create_main : empty
+    '''
+    global currFuncId, currType
+    FD.addFunc(currFuncId, CONV['void'])
+
 def p_add_param(p):
     '''
     add_param : empty
     '''
-    global  currId, currType
-    FD.addParam(currId,currType)
+    global  currScope, currId, currType, currFuncId
+    FD.addParam(currScope,currFuncId, currId, currType)
 
 def p_add_variable(p):
     '''
     add_variable : empty
     '''
-    global currType, currId, currScope, currXDims, currYDims
-    tmpVar = V.addVar(currId, currType, currScope, 0, currXDims, currYDims)
-    FD.addVariable(tmpVar)
+    global currScope, currType, currId, currXDims, currYDims, currFuncId
+    tmpVar = V.addVar(currId, currType, currXDims, currYDims)
+    FD.addVariable(currScope, currFuncId, tmpVar)
 
 def p_generate_return(p):
     '''
     generate_return : empty
     '''
-    quads.insertFuncType(FD.getFuncType())
+    global currFuncId
+    quads.insertFuncType(FD.getFuncType(currFuncId))
     quads.generateReturn()
 
 def p_generate_func_call(p):
     '''
     generate_func_call : empty
     '''
-    quads.generateFuncCall()
+    global currFuncId
+    params = FD.getFuncParams(currFuncId)
+    print(f"FUNC params {params}")
+    quads.generateFuncCall(params)
 
 def p_push_func_id(p):
     '''
     push_func_id : empty
     '''
-    quads.insertOpAndType(p[-1], FD.getFuncType())
+    global currFuncId
+    currFuncId = p[-1]
+    quads.insertOpAndType(p[-1], FD.getFuncType(currFuncId))
 
 def p_update_fund_dir(p):
     '''
     update_func_dir : empty
     '''
-    FD.updateFuncDir(quads.getQuadPointer())
+    FD.updatePointer(currFuncId, quads.getQuadPointer())
+
+def p_update_func_type(p):
+    '''
+    update_func_type : empty
+    '''
+    global currFuncId, currType
+    FD.updateFuncType(currFuncId, currType)
 
 
 ## SP FUNCS---------------------------------------------------------------------
@@ -610,16 +647,16 @@ def p_insert_crypto_func(p):
     '''
     insert_crypto_func : empty
     '''
-    global currFuncId
-    quads.insertOperator(CONV[currFuncId])
+    global currModuleId
+    quads.insertOperator(CONV[currModuleId])
     quads.generateCryptoFunc()
 
 def p_insert_file_func(p):
     '''
     insert_file_func : empty
     '''
-    global currFuncId
-    quads.insertOperator(CONV[currFuncId])
+    global currModuleId
+    quads.insertOperator(CONV[currModuleId])
     quads.generateFileFunc()
 
 def p_insert_param(p):
@@ -632,7 +669,8 @@ def p_insert_file_id(p):
     '''
     insert_file_id : empty
     '''
-    quads.insertOpAndType(p[-1], FD.getVarType(p[-1]))
+    global currScope
+    quads.insertOpAndType(p[-1], FD.getVarType(currScope, p[-1]))
 
 ## EXPRESSIONS-----------------------------------------------------------------
 def p_push_to_operator_stack(p):
@@ -651,7 +689,8 @@ def p_push_to_operand_stack(p):
     '''
     push_to_operand_stack : empty
     '''
-    quads.insertOpAndType(p[-1], FD.getVarType(p[-1]))
+    global currScope
+    quads.insertOpAndType(p[-1], FD.getVarType(currScope, p[-1]))
 
 def p_push_float_operand(p):
     '''
@@ -725,12 +764,12 @@ def p_solve_paren(p):
 
 ## GOTOs------------------------------------------------------------------------
 
-def p_fill_f_goto_for(p):
+def p_insert_goto_if(p):
     '''
-    fill_f_goto_for : empty
+    insert_goto_if : empty
     '''
-    quads.fillFGotoFor()
-
+    quads.generateGotoIf()
+    
 def p_push_jump(p):
     '''
     push_jump : empty
@@ -741,21 +780,13 @@ def p_insert_f_goto(p):
     '''
     insert_f_goto : empty
     '''
-    quads.insertOperator(CONV['gotof'])
     quads.generateGotoF()
 
 def p_insert_goto(p):
     '''
     insert_goto : empty
     '''
-    quads.insertOperator(CONV['goto'])
     quads.generateGoto()
-
-def p_fill_gotof_while(p):
-    '''
-    fill_gotof_while : empty
-    '''
-    quads.fillGotoFWhile()
 
 def p_fill_gotof(p):
     '''
@@ -763,42 +794,25 @@ def p_fill_gotof(p):
     '''
     # Check to see if it was already filled by the else statement
     # This only applies to if statement
-    global fill
-    if (fill):
-        quads.fillGotoF()
-    fill = True
+    quads.fillGotoF()
 
-def p_fill_gotof_alt(p):
+def p_fill_gotof_while(p):
     '''
-    fill_gotof_alt : empty
+    fill_gotof_while : empty
     '''
-    global fill
-    fill = False
-    quads.fillGotoFAlt()
-
-def p_fill_goto(p):
-    '''
-    fill_goto : empty
-    '''
-    quads.fillGoto()
-
-def p_fill_goto_while(p):
-    '''
-    fill_goto_while : empty
-    '''
-    quads.fillGotoWhile()
-    
-def p_fill_goto_for(p):
-    '''
-    fill_goto_for : empty
-    '''
-    quads.fillGotoFor()
+    quads.fillGotoFWhile()
 
 def p_insert_f_goto_for(p): 
     '''
     insert_f_goto_for : empty
     '''
     quads.generateForQuad()
+
+def p_fill_f_goto_for(p):
+    '''
+    fill_f_goto_for : empty
+    '''
+    quads.fillFGotoFor()
 
 def p_assign_counter(p):
     '''
@@ -811,6 +825,7 @@ def p_move_counter_quads(p):
     move_counter_quads : empty
     '''
     quads.moveCounterQuads()
+
 # ------------------------------------------------------------------------------
 def p_empty(p):
 	'''
@@ -828,23 +843,35 @@ def p_error(p):
 
 
 # ------------------------------------------------------------------------------
-
 parser = yacc.yacc()
 directory = 'Tests/'
-for filename in os.listdir(directory):
-    if filename.endswith(".moo"):  # Change the extension as needed
-        file_path = os.path.join(directory, filename)
-        print(file_path)
-        with open(file_path, 'r') as file:
-            data = file.read()
 
-            result = parser.parse(data)
-            print("-----------QUADS-----------")
-            quads.printTheQuads()
-            print("---------------------------")
-            quads.clearQuads()
-            V.clearV()
-            FD.clearFD()
-            print("\n")
+with open('Tests/functions.moo', 'r') as file:
+    data = file.read()
 
-
+    parser = yacc.yacc()
+    result = parser.parse(data)
+print("-----------QUADS-----------")
+quads.printTheQuads()
+print("---------------------------")
+#
+# for filename in os.listdir(directory):
+#     if filename.endswith(".moo"):  # Change the extension as needed
+#         file_path = os.path.join(directory, filename)
+#         print(file_path)
+#         with open(file_path, 'r') as file:
+#             data = file.read()
+#
+#             result = parser.parse(data)
+#             # FD.printFuncDir()
+#             # FD.printVars()
+#             print("-----------QUADS-----------")
+#             quads.printTheQuads()
+#             print("---------------------------")
+#             quads.clearQuads()
+#             V.clearV()
+#             FD.clearFD()
+#             currScope = CONV['global']
+#             print("\n")
+#
+#
