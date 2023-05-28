@@ -26,8 +26,8 @@ currXDims = 0
 currYDims = 0
 tmpDims = 0
 counter = 0
-fill = True
 input = ""
+hasReturn = False
 
 quads = QuadrupleTable()
 V = V()
@@ -39,7 +39,7 @@ FD = FD()
 # program start
 def p_prog(p):
     '''
-    prog : insert_goto_main prog_1 set_scope prog_2 fill_goto_main MAIN get_func_id create_main LPAREN RPAREN LCURLY prog_1 block generate_endfunc RCURLY 
+    prog : insert_goto_main prog_1 set_scope prog_2 fill_goto_main MAIN get_func_id create_main LPAREN RPAREN LCURLY prog_1 block generate_endfunc RCURLY update_era 
     '''
 
 def p_insert_goto_main(p):
@@ -131,8 +131,35 @@ def p_sp_type(p):
 # functions
 def p_function(p):
     '''
-    function : FUNC ID get_func_id create_func LPAREN param RPAREN ARROW function_2 update_func_type update_func_dir LCURLY function_1 block RCURLY generate_func_endfunc
+    function : FUNC ID get_func_id create_func LPAREN param RPAREN ARROW function_2 update_func_type update_func_dir\
+               LCURLY function_1 block RCURLY check_return generate_func_endfunc reset_return update_era
     '''
+
+def p_update_era(p):
+    '''
+    update_era : empty
+    '''
+    era = quads.getEraTable()
+    FD.updateEra(currFuncId, era)
+    quads.resetEra()
+
+def p_check_return(p):
+    '''
+    check_return : empty
+    '''
+    global currFuncId, hasReturn
+    funcType = FD.getFuncType(currFuncId)
+    if (funcType != CONV['void']):
+        quads.checkReturn(hasReturn)
+    else:
+        pass
+
+def p_reset_return(p):
+    '''
+    reset_return : empty
+    '''
+    global hasReturn
+    hasReturn = False
 
 def p_function_1(p):
     '''
@@ -193,7 +220,9 @@ def p_assignment(p):
 
 def p_assignment_1(p):
     '''
-    assignment_1 : exp assign_var SEMICOL
+    assignment_1 : std_func assign_std_func
+                 | exp assign_var SEMICOL 
+                 | CTE_CHAR push_string_operand assign_var SEMICOL
                  | sp_func assign_sp_func
                  | c_input assign_input
     '''
@@ -203,8 +232,7 @@ def p_variable(p):
     '''
     variable : ID variable_1 
     '''
-    global currScope
-    quads.insertOpAndType(p[1],FD.getVarType(currScope, p[1]))
+    quads.insertOpAndType(p[1],FD.getVarType(p[1]))
 
 def p_variable_1(p):
     '''
@@ -267,13 +295,13 @@ def p_condition_1(p):
 # while loops
 def p_while_loop(p):
     '''
-    while_loop : WHILE LPAREN exp RPAREN push_jump insert_f_goto LCURLY block RCURLY insert_goto fill_gotof_while
+    while_loop : WHILE LPAREN exp RPAREN insert_f_goto LCURLY block RCURLY insert_goto fill_gotof_while
     '''
 
 # for loops
 def p_for_loop(p):
     '''
-    for_loop : FOR push_jump LPAREN for_loop_1 assign_counter COMMA exp COMMA for_loop_1 push_jump RPAREN insert_f_goto_for\
+    for_loop : FOR LPAREN for_loop_1 assign_counter COMMA exp COMMA for_loop_1 push_jump RPAREN insert_f_goto_for\
                LCURLY block RCURLY fill_f_goto_for insert_goto move_counter_quads 
     '''
 
@@ -282,13 +310,13 @@ def p_for_loop_1(p):
     for_loop_1 : ID EQUAL exp 
     '''
     global currScope
-    quads.insertOpAndType(p[1], FD.getVarType(currScope, p[1]))
+    quads.insertOpAndType(p[1], FD.getVarType(p[1]))
     quads.insertOperator(CONV['='])
 
 # standard functions
 def p_std_func(p):
     '''
-    std_func : ID push_func_id LPAREN std_func_1 RPAREN generate_func_call 
+    std_func : ID push_func_id generate_era LPAREN std_func_1 RPAREN generate_func_call 
     '''
 
 def p_std_func_1(p):
@@ -307,7 +335,8 @@ def p_increment_param_counter(p):
     '''
     increment_param_counter : empty
     '''
-    quads.incrementParamCounter()
+    global currId
+    quads.incrementParamCounter(currId)
 
 # special functions
 def p_sp_func(p):
@@ -327,10 +356,10 @@ def p_return_func(p):
 def p_file_func(p):
     '''
     file_func : open_file
-              | read_file
               | write_file
               | close_file
     '''
+              # | read_file
 
 # cryptography functions
 def p_crypto_func(p):
@@ -344,13 +373,19 @@ def p_crypto_func(p):
 # file manipulation
 def p_open_file(p):
     '''
-    open_file : OPEN get_module_id LPAREN CTE_CHAR insert_param RPAREN insert_file_func 
+    open_file : OPEN get_module_id LPAREN open_file_1 RPAREN insert_file_func 
     '''
 
-def p_read_file(p):
+def p_open_file_1(p):
     '''
-    read_file : READ get_module_id LPAREN ID insert_file_id RPAREN insert_file_func 
+    open_file_1 : CTE_CHAR insert_param 
+                | ID insert_param 
     '''
+
+# def p_read_file(p):
+#     '''
+#     read_file : READ get_module_id LPAREN ID insert_file_id RPAREN insert_file_func 
+#     '''
 
 def p_write_file(p):
     '''
@@ -561,6 +596,14 @@ def p_assign_sp_func(p):
         quads.insertOperator(CONV[currModuleId])
         quads.assignSpFunc()
 
+def p_assign_std_func(p):
+    '''
+    assign_std_func : empty
+    '''
+    global currFuncId
+    quads.insertOpAndType(currFuncId, FD.getFuncType(currFuncId))
+    quads.assignStdFunc()
+
 def p_assign_input(p):
     '''
     assign_input : empty
@@ -574,19 +617,19 @@ def p_generate_st_func(p):
     quads.generateStFunc()
 
 ## FUNCS------------------------------------------------------------------------
-def p_create_func(p):
-    '''
-    create_func : empty
-    '''
-    global currFuncId, currType
-    FD.addFunc(currFuncId, currType)
-
 def p_create_main(p):
     '''
     create_main : empty
     '''
     global currFuncId, currType
     FD.addFunc(currFuncId, CONV['void'])
+
+def p_create_func(p):
+    '''
+    create_func : empty
+    '''
+    global currFuncId, currType
+    FD.addFunc(currFuncId, currType)
 
 def p_add_param(p):
     '''
@@ -601,13 +644,22 @@ def p_add_variable(p):
     '''
     global currScope, currType, currId, currXDims, currYDims, currFuncId
     tmpVar = V.addVar(currId, currType, currXDims, currYDims)
-    FD.addVariable(currScope, currFuncId, tmpVar)
+    FD.addVariable(currScope, tmpVar)
+
+def p_generate_era(p):
+    '''
+    generate_era : empty
+    '''
+    quads.insertOperand(currFuncId)
+    quads.generateEra()
 
 def p_generate_return(p):
     '''
     generate_return : empty
     '''
     global currFuncId
+    global hasReturn
+    hasReturn = True
     quads.insertFuncType(FD.getFuncType(currFuncId))
     quads.generateReturn()
 
@@ -617,7 +669,6 @@ def p_generate_func_call(p):
     '''
     global currFuncId
     params = FD.getFuncParams(currFuncId)
-    print(f"FUNC params {params}")
     quads.generateFuncCall(params)
 
 def p_push_func_id(p):
@@ -626,7 +677,7 @@ def p_push_func_id(p):
     '''
     global currFuncId
     currFuncId = p[-1]
-    quads.insertOpAndType(p[-1], FD.getFuncType(currFuncId))
+    quads.insertOperand(p[-1])
 
 def p_update_fund_dir(p):
     '''
@@ -670,7 +721,7 @@ def p_insert_file_id(p):
     insert_file_id : empty
     '''
     global currScope
-    quads.insertOpAndType(p[-1], FD.getVarType(currScope, p[-1]))
+    quads.insertOpAndType(p[-1], FD.getVarType(p[-1]))
 
 ## EXPRESSIONS-----------------------------------------------------------------
 def p_push_to_operator_stack(p):
@@ -690,7 +741,7 @@ def p_push_to_operand_stack(p):
     push_to_operand_stack : empty
     '''
     global currScope
-    quads.insertOpAndType(p[-1], FD.getVarType(currScope, p[-1]))
+    quads.insertOpAndType(p[-1], FD.getVarType(p[-1]))
 
 def p_push_float_operand(p):
     '''
@@ -843,35 +894,51 @@ def p_error(p):
 
 
 # ------------------------------------------------------------------------------
-parser = yacc.yacc()
-directory = 'Tests/'
 
-with open('Tests/functions.moo', 'r') as file:
-    data = file.read()
-
+def runSingle():
     parser = yacc.yacc()
-    result = parser.parse(data)
-print("-----------QUADS-----------")
-quads.printTheQuads()
-print("---------------------------")
-#
-# for filename in os.listdir(directory):
-#     if filename.endswith(".moo"):  # Change the extension as needed
-#         file_path = os.path.join(directory, filename)
-#         print(file_path)
-#         with open(file_path, 'r') as file:
-#             data = file.read()
-#
-#             result = parser.parse(data)
-#             # FD.printFuncDir()
-#             # FD.printVars()
-#             print("-----------QUADS-----------")
-#             quads.printTheQuads()
-#             print("---------------------------")
-#             quads.clearQuads()
-#             V.clearV()
-#             FD.clearFD()
-#             currScope = CONV['global']
-#             print("\n")
-#
-#
+    with open('Tests/functions.moo', 'r') as file:
+        data = file.read()
+
+        parser = yacc.yacc()
+        result = parser.parse(data)
+    print('Tests/functions.moo')
+    print("-----------QUADS-----------")
+    quads.printEraTable()
+    quads.printStacks()
+    print("---------------------------")
+    quads.printTheQuads()
+    print("---------------------------")
+    FD.printFuncDir()
+    FD.printVars()
+    print("---------------------------")
+
+def runMulti():
+    directory = 'Tests/'
+    for filename in os.listdir(directory):
+        if filename.endswith(".moo"):  # Change the extension as needed
+            file_path = os.path.join(directory, filename)
+            print(file_path)
+            with open(file_path, 'r') as file:
+                data = file.read()
+
+                result = parser.parse(data)
+                # FD.printFuncDir()
+                # FD.printVars()
+                print("-----------QUADS-----------")
+                quads.printEraTable()
+                quads.printTheQuads()
+                print("---------------------------")
+                quads.printStacks()
+                print("---------------------------")
+                FD.printFuncDir()
+                FD.printVars()
+                print("---------------------------")
+                quads.clearQuads()
+                V.clearV()
+                FD.clearFD()
+                currScope = CONV['global']
+                print("\n")
+
+
+runSingle()
