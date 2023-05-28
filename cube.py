@@ -47,7 +47,9 @@ CONV = {
     'return':        38,
     'main':          39,
     'gosub':         40,
-    'endfunc':       41
+    'era':           41,
+    'param':         42,
+    'endfunc':       43
 }
 
 
