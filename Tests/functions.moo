@@ -1,21 +1,27 @@
 
 var float x,y;
+var float i;
 
-func funcUno(int a, int b) -> void {
-    y = 5 + 2 / 3 * 4;
-}
 
 func funcDos(float a, float b) -> float {
-    x = 10 /2 * 5 + y - 4;
-    return x; 
+    if (x -lt b){
+         x = 10 /2 * 5 + y - 4;
+        }
+         return x;
     }
 
+# func funcTres(float a, float b) -> float {
+#     if (a -lt b){
+#             x = y + b * a /3;
+#         }else{
+#                 while(a -gt b){
+#                         a = a + 1;
+#                     }
+#             }
+#     return 0.0;
+#     }
 
 main(){
-    funcDos(x,y)
+    y = funcDos(x,y)
 
 }
-
-
-
-
