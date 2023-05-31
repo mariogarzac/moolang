@@ -1,11 +1,4 @@
 
-'''
-TODO: Revisar cubo con la maestra
- - asingaciones
- - char
- - bools
-'''
-
 CONV = {
     'void':          0,
     'int':           1,
@@ -33,17 +26,18 @@ CONV = {
     'gotov':         23,
     'local':         24,
     'global':        25,
-    'open' :         26, 
-    'read' :         27, 
-    'write'  :       28, 
-    'close' :        29,
-    'encrypt' :      30,
-    'decrypt' :      31,
-    'hash_md5' :     32,
-    'hash_sha256' :  33, 
-    'generate_key':  34,
-    'print':         35,
-    'input':         36,
+    'constant':      26,
+    'open' :         27, 
+    'read' :         28, 
+    'write'  :       29, 
+    'close' :        30,
+    'encrypt' :      31,
+    'decrypt' :      32,
+    'hash_md5' :     33,
+    'hash_sha256' :  34, 
+    'generate_key':  35,
+    'print':         36,
+    'input':         37,
     'return':        38,
     'main':          39,
     'gosub':         40,
