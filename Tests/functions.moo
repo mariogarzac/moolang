@@ -3,8 +3,12 @@ var float x,y;
 var float i;
 
 
-func funcDos(float a, float b) -> float {
-    if (x -lt b){
+func funcDos(float a) -> float {
+    for (i = 0, i -lt 10, i = i + 1){
+        generate_key()
+        }
+
+    if (x -lt a){
          x = 10 /2 * 5 + y - 4;
         }
          return x;
@@ -22,6 +26,7 @@ func funcDos(float a, float b) -> float {
 #     }
 
 main(){
-    y = funcDos(x,y)
+    var int i;
+    funcDos(4/2)
 
 }
