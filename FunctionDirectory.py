@@ -1,13 +1,14 @@
 import pprint as p
 import json 
 from cube import CONV
+from VirtualMemory import * 
 
 class Variable:
     def __init__ (self):
         self.varAttributes = {}
 
-    def addVar(self, varId, varType, varXDims = 0 , varYDims = 0):
-        self.varAttributes = {varId :{"vType" : varType, "vXDims" : varXDims , "vYDims" : varYDims}}
+    def addVar(self, varId, varType, varXDims = 0 , varYDims = 0, address = 0):
+        self.varAttributes = {varId :{"vType" : varType, "vXDims" : varXDims , "vYDims" : varYDims, "address": address}}
 
         return self.varAttributes
 
@@ -26,6 +27,7 @@ class FunctionDirectory:
                      CONV['global'] : {"fName" : "global", "vars" :{}},
                      CONV['local'] : {"fName" : 0, "vars" :{}}
                     }
+        self.memory = VirtualMemory()
 
     # <INSERTS>
     def addFunc(self, funcId, funcType):
@@ -35,25 +37,49 @@ class FunctionDirectory:
                     print(f"ERROR: Function {funcId} with type {self.convertOp(funcType)} has already been declared")
                     exit()
 
+        # Add function to function dictionary
         self.funcDirectory[funcId] = {}
         self.funcDirectory[funcId]["fType"] = funcType
         self.funcDirectory[funcId]["pointer"] = 0
         self.funcDirectory[funcId]["fResources"] = {CONV['int']:0, CONV['float']:0, CONV['char']:0, CONV['file']:0, CONV['bool']:0 },
         self.funcDirectory[funcId]["fParams"] = []
+        self.funcDirectory[funcId]["fParamId"] = []
+
+        # Add global variable with function name
         self.vars[CONV['local']]["fName"] = funcId
         self.vars[CONV['global']]["vars"][funcId] = {}
         self.vars[CONV['global']]["vars"][funcId].update({"vType" : funcType})
+        
+        # Set the address for the function variable
+        address = self.setAddress(CONV['global'], funcId, funcType)
+        self.vars[CONV['global']]["vars"][funcId].update({"address" : address})
 
-    def addParam(self, scope, funcId, paramId, paramType): 
+    def addParam(self,funcId,paramId, paramType): 
+        self.funcDirectory[funcId]["fParamId"].append(paramId)
         self.funcDirectory[funcId]["fParams"].append(paramType)
-        self.vars[scope]["vars"][paramId] = {}
-        self.vars[scope]["vars"][paramId].update({"vType" : paramType})
 
     def addVariable(self, scope, newVar):
         # get var id from newvar dictionary 
         varId = list(newVar.keys())[0]
-        self.vars[scope]["vars"][varId] = {}
-        self.vars[scope]["vars"][varId].update(newVar[varId])
+        if (self.findVariable(scope,varId)):
+            print(f"ERROR: A variable with name {varId} has already been declared.")
+            exit()
+        else:
+            self.vars[scope]["vars"][varId] = {}
+            self.vars[scope]["vars"][varId].update(newVar[varId])
+
+            varType = self.vars[scope]["vars"][varId]["vType"]
+            address = self.setAddress(scope, varId, varType)
+            self.vars[scope]["vars"][varId]["address"] = address
+
+    def findVariable(self,scope, varId):
+        # find in local scope
+        try:
+            self.vars[scope]["vars"][varId]
+            return True
+        except KeyError:
+            existsLocal = False
+            pass
 
     def updateFuncType(self,funcId, fType):
         self.funcDirectory[funcId]["fType"] = fType
@@ -69,11 +95,9 @@ class FunctionDirectory:
                  CONV['file']  : eraTable[3], 
                  CONV['bool']  : eraTable[4]
                  }
-                
 
     def getFuncParams(self, funcId):
-        size = len(self.funcDirectory[funcId]["fParams"])
-        return self.funcDirectory[funcId]["fParams"]
+        return self.funcDirectory[funcId]["fParams"][:]
 
     # GET IT
     def getVarType(self,varId):
@@ -99,6 +123,64 @@ class FunctionDirectory:
     def getFuncType(self,funcId):
         return self.funcDirectory[funcId]["fType"]
 
+    def getFuncPointer(self, funcId):
+        return self.funcDirectory[funcId]["pointer"]
+
+    # VIRTUAL MEMORY
+    def setAddress(self, scope,varId, varType):
+        try:
+            xDims = self.vars[scope]["vars"][varId]["vXDims"]
+            yDims = self.vars[scope]["vars"][varId]["vYDims"]
+            size = xDims * yDims
+        except KeyError:
+            size = 1
+
+        address = self.memory.createMoreMemory(scope, varType, size)
+        self.vars[scope]["vars"][varId]["address"] = address
+        return address
+
+    def addConstant(self,scope, value, varType):
+        # scope = CONV['constant']
+        address = self.memory.createMemory(scope, varType)
+        if (scope == CONV['local']):
+            self.memory.addToLocalMemory(address, varType)
+        else:
+            self.memory.addToConstantMemory(address, value)
+        return address
+    
+    def addTmpVariable(self, varType):
+        return self.memory.createMemory(CONV['local'], varType)
+
+    def addToMemory(self,scope):
+        if (scope == CONV['global']):
+            self.memory.addToGlobalMemory(address,varType)
+        elif (scope == CONV['local']):
+            self.memory.addToLocalMemory(address,varType)
+        else:
+            print("ERROR: Unknown scope")
+            exit()
+        
+    def printMemory(self):
+        self.memory.printMem()
+
+    def getVarAddress(self, varId):
+        existsLocal = True
+        try:
+            return self.vars[CONV['local']]["vars"][varId]["address"] 
+        except KeyError:
+            existsLocal = False
+            pass
+
+        # find in global scope
+        if (not existsLocal):
+            try:
+                return self.vars[CONV['global']]["vars"][varId]["address"]
+            except KeyError:
+                self.printVars()
+                print(f"ERROR: Variable {varId} does not exist.")
+                exit()
+
+
     # HELPER FUNCTIONS
     def clearVarTable(self):
         self.vars[CONV['local']] = {"fName" : 0, "vars" :{}}
@@ -111,11 +193,3 @@ class FunctionDirectory:
 
     def convertOp(self, op):
             return list(CONV.keys())[list(CONV.values()).index(op)]
-
-    # DEBUGGING
-    def clearFD(self):
-        self.funcDirectory = {"global" : {"fType":0, "pointer":0, "fResources":{}, "fParams": []}} 
-        self.vars = {
-                     CONV['global'] : {"fName" : "global", "vars" :{}},
-                     CONV['local'] : {"fName" : 0, "vars" :{}}
-                    }
