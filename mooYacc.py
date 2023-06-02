@@ -1034,7 +1034,7 @@ def runSingle(arch):
     # print("***************************")
     # FD.printVars()
     # print("---------------------------")
-    # FD.printMemory()
-    # print("---------------------------")
+    FD.printMemory()
+    print("---------------------------")
 
 runSingle(file)
