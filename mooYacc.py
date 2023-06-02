@@ -1,4 +1,6 @@
 import os
+import pickle
+
 '''
 TODO:
     - func calls with two params
@@ -11,10 +13,13 @@ from FunctionDirectory import FunctionDirectory as FD
 from FunctionDirectory import Variable as V
 from cube import CONV
 
- 
-arch = input('filename: ')
+file = input('filename: ')
 directory = 'Tests/'
-file = directory + arch + '.moo'
+filename = directory + file + '.moo'
+ 
+# arch = input('filename: ')
+# directory = 'Tests/'
+# file = directory + arch + '.moo'
 # ------------------------------------------------------------------------------
 ## Global Variables-------------------------------------------------------------
 
@@ -30,6 +35,7 @@ tmpDims = 0
 counter = 0
 input = ""
 hasReturn = False
+seenFor = 0
 
 quads = QuadrupleTable()
 V = V()
@@ -268,8 +274,8 @@ def p_c_print(p):
 
 def p_c_print_1(p):
     '''
-    c_print_1 : exp c_print_2 push_print_and_input generate_st_func  
-              | CTE_CHAR push_string_operand c_print_2 push_print_and_input generate_st_func  
+    c_print_1 : exp push_print_and_input generate_st_func c_print_2 
+              | CTE_CHAR push_string_operand push_print_and_input generate_st_func c_print_2 
     '''
 
 def p_c_print_2(p):
@@ -280,13 +286,13 @@ def p_c_print_2(p):
 # conditional
 def p_condition(p):
     '''
-    condition : IF LPAREN exp RPAREN insert_f_goto LCURLY block RCURLY condition_1 fill_gotof
+    condition : IF LPAREN exp RPAREN insert_f_goto LCURLY block RCURLY condition_1
     '''
 
 def p_condition_1(p):
     '''
-    condition_1 : ELSE insert_goto_if LCURLY block RCURLY 
-                | empty
+    condition_1 : ELSE fill_gotof insert_goto_if LCURLY block RCURLY 
+                | fill_gotof empty
     '''
 
 # while loops
@@ -298,9 +304,16 @@ def p_while_loop(p):
 # for loops
 def p_for_loop(p):
     '''
-    for_loop : FOR LPAREN for_loop_1 assign_counter COMMA exp COMMA for_loop_1 push_jump RPAREN insert_f_goto_for\
-               LCURLY block RCURLY fill_f_goto_for insert_goto move_counter_quads 
+    for_loop : FOR update_seen LPAREN for_loop_1 assign_counter COMMA exp push_jump COMMA for_loop_1 push_jump RPAREN insert_f_goto_for\
+             LCURLY block RCURLY fill_f_goto_for insert_goto_for move_counter_quads 
     '''
+
+def p_update_seen(p):
+    '''
+    update_seen : empty
+    '''
+    global seenFor
+    seenFor += 1
 
 def p_for_loop_1(p):
     '''
@@ -309,7 +322,6 @@ def p_for_loop_1(p):
     address = FD.getVarAddress(p[1])
     varType = FD.getVarType(p[1])
     quads.insertOpAndType(address, varType)
-    quads.insertOperator(CONV['='])
 
 # standard functions
 def p_std_func(p):
@@ -734,8 +746,8 @@ def p_generate_func_call(p):
     address = FD.getVarAddress(currFuncId)
     quads.insertOperand(address)
     quads.insertOperand(pointer)
-    tmpAddress = FD.getVarAddress(currFuncId)
-    quads.insertOperand(tmpAddress)
+    # tmpAddress = FD.getVarAddress(currFuncId)
+    quads.insertOperand(currFuncId)
     quads.generateFuncCall(params)
 
 def p_push_func_id(p):
@@ -744,8 +756,8 @@ def p_push_func_id(p):
     '''
     global currFuncId
     currFuncId = p[-1]
-    address = FD.getVarAddress(currFuncId)
-    quads.insertOperand(address)
+    # address = FD.getVarAddress(currFuncId)
+    quads.insertOperand(currFuncId)
 
 def p_update_fund_dir(p):
     '''
@@ -963,11 +975,25 @@ def p_insert_goto(p):
     '''
     quads.generateGoto()
 
+def p_insert_goto_for(p):
+    '''
+    insert_goto_for : empty
+    '''
+    global seenFor
+    if (seenFor == 2):
+        quads.generateGotoFor(seenFor)
+        seenFor = 0
+    else:
+        quads.generateGotoFor(0)
+
 def p_fill_gotof(p):
     '''
     fill_gotof : empty
     '''
-    quads.fillGotoF()
+    mod = 0
+    if (p[-1] == "else"):
+        mod = 1
+    quads.fillGotoF(mod)
 
 def p_fill_gotof_while(p):
     '''
@@ -979,6 +1005,9 @@ def p_insert_f_goto_for(p):
     '''
     insert_f_goto_for : empty
     '''
+    # address = FD.getVarAddress(p[1])
+    # currType = FD.getVarType(p[1])
+    # quads.insertOpAndType(address, currType)
     quads.generateForQuad()
 
 def p_fill_f_goto_for(p):
@@ -1017,14 +1046,17 @@ def p_error(p):
 
 # ------------------------------------------------------------------------------
 
-def runSingle(arch):
-    parser = yacc.yacc()
-    with open(arch, 'r') as file:
-        data = file.read()
+parser = yacc.yacc()
 
-        parser = yacc.yacc()
+try:
+    with open (filename, "r") as file:
+        data = file.read()
         result = parser.parse(data)
-    print(arch)
+
+    with open('data.obj', 'wb') as file:
+        pickle.dump(
+                {"quadruples": quads.quads, "funcDir": FD.funcDirectory, "memory": FD.memory }, file)
+
     print("-----------QUADS-----------")
     quads.printStacks()
     print("---------------------------")
@@ -1037,4 +1069,6 @@ def runSingle(arch):
     FD.printMemory()
     print("---------------------------")
 
-runSingle(file)
+
+except EOFError:
+    print(EOFError)

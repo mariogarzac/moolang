@@ -4,29 +4,15 @@ var file  arch2;
 
 
 main(){
-var int i,j;
+var int i,j, k;
 i = 0;
-j = 0;
-#  while(i -lt 10){
-#      while (j -lt 10){
-#         print(i,j)
-#         print("\n")
-#         print(j)
-#         j = (j + 1);
-#          }
-#      print("\n")
-#      j = 0;
-#      i = (i + 1);
-#   }
+x = 0;
 
-#if (i -lt 10){
-#        print("Es menor a 10")
-#    }
-#
 
-while (i -lt 10){
-#        print(i)
-        i = (i + 1);
-    }
+      for (i = 3, i -le 4, i = i + 1){
+          for (j = 1, j -lt 2, j = j + 1){
+              print(i)
+      }
+      print("\n")
+      }
 }
-

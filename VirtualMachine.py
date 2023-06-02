@@ -22,7 +22,7 @@ class VirtualMachine:
         
         operator = quad[self.ip].operator
         if (quad[self.ip].leftOperand != None):
-            print(self.quads[self.ip].operator, self.quads[self.ip].leftOperand,self.quads[self.ip].rightOperand, self.quads[self.ip].address)
+            # print(self.quads[self.ip].operator, self.quads[self.ip].leftOperand,self.quads[self.ip].rightOperand, self.quads[self.ip].address)
             scope = self.memory.getScope(quad[self.ip].leftOperand)
             leftOperand = self.memory.getValue(scope, quad[self.ip].leftOperand)
 
@@ -89,13 +89,13 @@ class VirtualMachine:
                 scope = self.memory.getScope(address)
                 value = self.memory.getValue(scope, address)
                 
-                # if (type(value) == str):
-                #     if (eval(value) == "\n"):
-                #         print("\n")
-                #     else:
-                #         print(value.replace('"', ''), end="")
-                # else:
-                #     print(value, end="")
+                if (type(value) == str):
+                    if (eval(value) == "\n"):
+                        print("\n")
+                    else:
+                        print(value.replace('"', ''), end="")
+                else:
+                    print(value, end="")
                 
             elif(operator == CONV['input']):
                 scope = self.memory.getScope(address)
@@ -119,7 +119,6 @@ class VirtualMachine:
                     self.memory.setValue(scope, address, value)
             elif(operator == CONV['-lt']):
                     value = leftOperand < rightOperand
-                    print(leftOperand, rightOperand, value)
                     scope = self.memory.getScope(address)
                     self.memory.setValue(scope, address, value)
             elif(operator == CONV['-le']):
@@ -157,9 +156,8 @@ class VirtualMachine:
 
                 if (leftOperand == False):
                     self.ip = address - 1
-
                     # if (self.control < 5):
-                print(self.quads[self.ip].operator, self.quads[self.ip].leftOperand,self.quads[self.ip].rightOperand, self.quads[self.ip].address)
+                # print(self.quads[self.ip].operator, self.quads[self.ip].leftOperand,self.quads[self.ip].rightOperand, self.quads[self.ip].address)
                 # self.control += 1
                 # else:
                 #     exit()

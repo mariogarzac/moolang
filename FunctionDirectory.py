@@ -159,9 +159,6 @@ class FunctionDirectory:
         else:
             print("ERROR: Unknown scope")
             exit()
-        
-    def printMemory(self):
-        self.memory.printMem()
 
     def getVarAddress(self, varId):
         existsLocal = True
@@ -180,6 +177,12 @@ class FunctionDirectory:
                 print(f"ERROR: Variable {varId} does not exist.")
                 exit()
 
+    def getFuncs(self):
+        with open("func.json", "w") as file:
+            json.dump(self.funcDirectory, file)
+
+    def getMemory(self):
+        self.memory.getMemory()
 
     # HELPER FUNCTIONS
     def clearVarTable(self):
@@ -190,6 +193,9 @@ class FunctionDirectory:
 
     def printVars(self):
         print(json.dumps(self.vars, indent=4, sort_keys=False))
+        
+    def printMemory(self):
+        self.memory.printMem()
 
     def convertOp(self, op):
             return list(CONV.keys())[list(CONV.values()).index(op)]

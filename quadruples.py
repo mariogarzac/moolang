@@ -1,5 +1,6 @@
 from cube import CUBE
 from cube import CONV
+import csv
 
 class Quadruple:
     def __init__(self, operator, leftOperand, rightOperand, address):
@@ -15,7 +16,21 @@ class Quadruple:
             print(f"{operator} {self.leftOperand} {self.rightOperand} {self.address}")
         except ValueError:
             print(f"{self.operator} {self.leftOperand} {self.rightOperand} {self.address}")
+    
+    def writeContents(self):
+        print(f"{self.operator} {self.leftOperand} {self.rightOperand} {self.address}\n")
 
+    def getLeftOperand(self):
+        return self.leftOperand
+
+    def getRightOperand(self):
+        return self.rightOperand
+    
+    def getOperator(self):
+        return self.operator
+
+    def getAddress(self):
+        return self.address
 
 class QuadrupleTable:
 
@@ -51,7 +66,6 @@ class QuadrupleTable:
         
     def insertFuncType(self, funcType):
         self.typeStack.append(funcType)
-
 
     # <POP POPS>
     def popOperator(self):
@@ -94,6 +108,12 @@ class QuadrupleTable:
     def getQuadPointer(self):
         return self.quadPointer
 
+    def getQuads(self):
+        with open ("q.csv", "w", newline="") as file:
+            writer = csv.writer(file)
+            for quadruple in self.quads:
+                writer.writerow([quadruple.operator, quadruple.leftOperand, quadruple.rightOperand, quadruple.address])
+
     # <TYPE CHECKING>
     def checkTypeMismatch(self, leftType, rightType, operator):
         try:
@@ -119,6 +139,7 @@ class QuadrupleTable:
         print("OPERANDSTACK",self.operandStack)
         print("OPERATORSTACK",self.operatorStack)
         print("JUMPS",self.jumpStack)
+        print("ADDRESS",self.addressTable)
         print("\n")
 
     def convertOp(self, op):
@@ -178,9 +199,7 @@ class QuadrupleTable:
         self.quadPointer += 1
 
     def resetParamCounter(self):
-        print(self.paramCounter)
         self.paramCounter = 0
-        print(self.paramCounter)
 
     def checkReturn(self, hasReturn):
         if (not hasReturn):
@@ -215,15 +234,13 @@ class QuadrupleTable:
                     exit()
                 else:
                     pass
-            print("Inside generateFuncCall")
-            pointer = self.popOperand() 
             funcName = self.popOperand() 
+            pointer = self.popOperand() 
             tmpAddress = self.popOperand()
             self.quads.append(Quadruple(CONV['gosub'], funcName, f"${pointer}", tmpAddress))
             self.quadPointer += 1
             self.quads.append(Quadruple(CONV['='], tmpAddress, None, funcName))
             self.quadPointer += 1
-            self.printStacks()
         else:
             print(f"ERROR: Expected {len(fParams)} and recieved {self.paramCounter}")
             exit()
@@ -340,11 +357,11 @@ class QuadrupleTable:
     # <GOTOs>
     def generateGotoF(self):
         resType = self.popType()
-        self.eraTable[resType - 1] += 1
         if (resType == CONV['bool']):
+            self.eraTable[resType - 1] += 1
             res = self.popOperand()
             self.quads.append(Quadruple(CONV['gotof'], res, None, None))
-            self.jumpStack.append(self.quadPointer)
+            self.jumpStack.append(self.quadPointer) # jump back here
             self.quadPointer += 1
         else:
             print(f"ERROR: Expression type must be of type bool, not {self.convertOp(resType)}.")
@@ -355,17 +372,24 @@ class QuadrupleTable:
         self.quads.append(Quadruple(CONV['goto'],None, None, f"${gotof - 1}"))
         self.jumpStack.append(gotof) # to fill gotof while for
         self.quadPointer += 1
+    
+    def generateGotoFor(self, seen):
+        gotof = self.popJump()
+        if (seen == 2):
+            self.quads.append(Quadruple(CONV['goto'],None, None, f"${gotof - 3}"))
+            # self.jumpStack.append(gotof) # to fill gotof while for
+        else:
+            self.quads.append(Quadruple(CONV['goto'],None, None, f"${gotof - 1}"))
+        self.quadPointer += 1
 
     # IF
     def generateGotoIf(self):
-        self.quads.append(Quadruple(CONV['goto'],None, None, f"${self.quadPointer + 1}"))
         self.quadPointer += 1
-        # self.jumpStack.append(self.quadPointer)
+        self.quads.append(Quadruple(CONV['goto'],None, None, f"${self.quadPointer + 1}"))
 
-    def fillGotoF(self):
+    def fillGotoF(self , mod):
         quadToFill = self.popJump()
-        print(f"qft {quadToFill}")
-        self.quads[quadToFill].address = f"${self.quadPointer}"
+        self.quads[quadToFill].address = f"${self.quadPointer +  mod}"
 
     # WHILE
     def fillGotoFWhile(self):
@@ -377,11 +401,10 @@ class QuadrupleTable:
     def generateForCounter(self):
        valueType = self.popType()
        varType = self.popType()
-       operator = self.popOperator()
-       if (self.checkTypeMismatch(valueType, varType, operator)):
+       if (self.checkTypeMismatch(valueType, varType, CONV['='])):
            variable = self.popOperand()
            value = self.popOperand()
-           self.quads.append(Quadruple(operator,value, None, variable))
+           self.quads.append(Quadruple(CONV['='],value, None, variable))
            self.quadPointer += 1
 
     def generateForQuad(self):
@@ -393,19 +416,21 @@ class QuadrupleTable:
             variable = self.popOperand()
             modifier = self.popOperand()
             rLimit = self.popOperand()
-            operator = self.popOperator()
 
             if (varType == modType):
                 # initialize variable
                 expression = self.popJump() - 2
                 res = self.quads[expression].address
 
-                self.quads.append(Quadruple(operator, self.address, None, variable))
+                prevRes = self.quads[self.quadPointer - 1].address
+
+                # creates modifier quadruple
+                self.quads.append(Quadruple(CONV['='], prevRes, None, variable))
                 self.quadPointer += 1
 
                 # create gotof quadruple
                 self.quads.append(Quadruple(CONV['gotof'],res, None, None))
-                self.insertJump()
+                self.insertJump() # insert quad of expression
                 self.quadPointer += 1
                 self.address += 1
             else: 
@@ -417,26 +442,27 @@ class QuadrupleTable:
 
     def fillFGotoFor(self):
         quadToFill = self.popJump()
-        print(f"filling {quadToFill}")
-        self.printTheQuads()
         self.quads[quadToFill].address = f"${len(self.quads) + 1}"
         self.jumpStack.append(quadToFill -  2) 
 
     # moves the for control variable before the goto
     def moveCounterQuads(self):
+
+        # pop gotof jump
         # Gets the quad position
         quadToMove = self.popJump() 
 
         # Pop quads
         expQuad = self.quads.pop(quadToMove)
         assignmentQuad = self.quads.pop(quadToMove)
-        assignmentQuad.address = expQuad.address
+        # assignmentQuad.address = expQuad.address
         
         # Insert quads into new position
         newPosition = len(self.quads) - 1
         self.quads.insert(newPosition, assignmentQuad)
         self.quads.insert(newPosition, expQuad)
-        
+
+
     # -------------------------------------------------------------------------
     # MAIN and ENDFUNC
     def generateGotoMain(self):

@@ -100,7 +100,7 @@ t_RCURLY =  r'\}'
 t_ARROW = r'->'
 t_COMMA =  r','
 t_SEMICOL =  r';'
-t_CTE_CHAR = r'"[\w\d\s\\n\*,!?_\.:-]*"'
+t_CTE_CHAR = r'"[\(\)\w\d\s\\\n\,\*!?_\.:-]*"'
 t_GT = r'-gt'
 t_GE = r'-ge'
 t_LT = r'-lt'
@@ -130,7 +130,7 @@ def t_CTE_INT(t):
     t.value = int(t.value)    
     return t
 
-def t_newline(t):
+def t_NEWLINE(t):
     r'\n+'
     t.lexer.lineno += len(t.value)
 

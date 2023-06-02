@@ -1,13 +1,16 @@
 
 main(){
-var int x, y, a, b;
-var float m;
-var int res;
+    var int x, y, a, b;
+    var float m;
+#    var int res;
+#    b = 2;
+    y = 10;
+#
+    a = input()
+    m = 10 - (a * y);
+    print("hihihi", m)
+    print("\n")
+    print("el resultado es")
+}
 
-    m = (a * b);
-    m = a * b;
-
-    # m = m + 10 - y * 2 / (a * b) - 1;
     
-
-    }

@@ -313,8 +313,11 @@ class VirtualMemory:
             self.local.update({address : False})
         elif (varType == CONV['char']):
             self.local.update({address: ""})
+        elif(varType == CONV['int']):
+            self.local.update({address : 0})
         else:
             self.local.update({address : 0})
+
 
     def addToGlobalMemory(self, address, varType):
         if (varType == CONV['float']):
@@ -323,28 +326,35 @@ class VirtualMemory:
             self.constAndGlobal.update({address : False})
         elif (varType == CONV['char']):
             self.constAndGlobal.update({address: ""})
+        elif(varType == CONV['int']):
+            self.constAndGlobal.update({address : 0})
         else:
             self.constAndGlobal.update({address : 0})
 
     def addToConstantMemory(self, address, value):
         self.constAndGlobal.update({address : value})
 
-    def getValue(self,scope, address):
+    #--------------------------------------------------------------------------
+
+    def setValue(self,scope, address, value):
+        if (scope == CONV['local']):
+            self.local[address] = value
+            # print(f"new value in {address} is {self.local[address]}")
+        elif (scope == CONV['global']):
+            self.constAndGlobal[address] = value
+            # print(f"new value in {address} is {self.constAndGlobal[address]}")
+
+    def getValue(self, scope, address):
         if (scope == CONV['local']):
             return self.local[address]
         elif (scope == CONV['global'] or scope == CONV['constant']):
             return self.constAndGlobal[address]
-    
-    def setValue(self, scope, address, value):
-        if (scope == CONV['local']):
-            self.local[address] = value
-        elif (scope == CONV['global'] or scope == CONV['constant']):
-            self.constAndGlobal[address] = value
+        else:
+            print(f"ERROR: Could not get value for address {address} in scope{scope}.")
 
-    #--------------------------------------------------------------------------
     # PRINT MEMORY
     def printMem(self):
-        print(json.dumps(self.local, indent=4, sort_keys=False))
-        print(json.dumps(self.constAndGlobal, indent=4, sort_keys=False))
+        print(json.dumps(self.local, indent=4, sort_keys=True))
+        print(json.dumps(self.constAndGlobal, indent=4, sort_keys=True))
 
 
