@@ -132,4 +132,6 @@ dmypy.json
 main
 parse*
 Files
+data.obj
+*.txt
 
