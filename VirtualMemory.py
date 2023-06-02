@@ -287,9 +287,9 @@ class VirtualMemory:
 
     def getScope(self,address):
         if (address >= self.localIntStart and address <= self.localBoolEnd):
-            return CONV['global']
-        elif (address >= self.globalIntStart and address <= self.globalBoolEnd):
             return CONV['local']
+        elif (address >= self.globalIntStart and address <= self.globalBoolEnd):
+            return CONV['global']
         elif (address >= self.constIntStart and address <= self.constBoolEnd):
             return CONV['constant']
         else:
@@ -328,6 +328,18 @@ class VirtualMemory:
 
     def addToConstantMemory(self, address, value):
         self.constAndGlobal.update({address : value})
+
+    def getValue(self,scope, address):
+        if (scope == CONV['local']):
+            return self.local[address]
+        elif (scope == CONV['global'] or scope == CONV['constant']):
+            return self.constAndGlobal[address]
+    
+    def setValue(self, scope, address, value):
+        if (scope == CONV['local']):
+            self.local[address] = value
+        elif (scope == CONV['global'] or scope == CONV['constant']):
+            self.constAndGlobal[address] = value
 
     #--------------------------------------------------------------------------
     # PRINT MEMORY
