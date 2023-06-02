@@ -1,25 +1,32 @@
-var float x,z,y;
+var float z,y;
+var int x;
 var file  arch2;
-# var char arch1[8];
-# var char arr[5][10];
 
 
 main(){
 var int i,j;
-if (i -ge 1){
-    y = 5 + 2 / 3 * 4;
+i = 0;
+j = 0;
+#  while(i -lt 10){
+#      while (j -lt 10){
+#         print(i,j)
+#         print("\n")
+#         print(j)
+#         j = (j + 1);
+#          }
+#      print("\n")
+#      j = 0;
+#      i = (i + 1);
+#   }
 
-}else{
-     y = (x);
- }
-  while(x -lt 10){
-   }
-      for (i = 0, i -ge 10, i = i* 2){
-#           for (j = 0, j -lt 10, j = j + 1){
-#               generate_key()
-#               }
-          print("hi")
- 
-      }
+#if (i -lt 10){
+#        print("Es menor a 10")
+#    }
+#
 
+while (i -lt 10){
+#        print(i)
+        i = (i + 1);
+    }
 }
+
