@@ -252,8 +252,8 @@ def p_assignment(p):
 
 def p_assignment_1(p):
     '''
-    assignment_1 : std_func assign_std_func
-                 | push_to_operator_stack exp assign_var SEMICOL 
+    assignment_1 : push_to_operator_stack exp assign_var SEMICOL 
+                 | std_func assign_std_func
                  | CTE_CHAR push_string_operand assign_var SEMICOL
                  | sp_func assign_sp_func
                  | c_input assign_input
@@ -634,12 +634,11 @@ def p_assign_var(p):
     '''
     assign_var : empty
     '''
-    operator = quads.popOperator()
     rightType = quads.popType()
     leftType = quads.popType()
-    resType = quads.checkTypeMismatch(leftType, rightType, operator)
+    resType = quads.checkTypeMismatch(leftType, rightType, CONV['='])
     tmpAddress = FD.addTmpVariable(resType)
-    quads.generateQuad(operator, rightType, leftType, resType, tmpAddress)
+    quads.generateQuad(CONV['='], rightType, leftType, resType, tmpAddress)
 
 def p_assign_sp_func(p):
     '''
@@ -666,7 +665,7 @@ def p_assign_input(p):
     assign_input : empty
     '''
     global currType
-    address = quads.popAddress() #FD.addTmpVariable(currType)
+    address = quads.quads[quads.getQuadPointer() - 1].address
     quads.assignInput(address)
 
 def p_generate_st_func(p):
@@ -975,17 +974,6 @@ def p_insert_goto(p):
     '''
     quads.generateGoto()
 
-def p_insert_goto_for(p):
-    '''
-    insert_goto_for : empty
-    '''
-    global seenFor
-    if (seenFor == 2):
-        quads.generateGotoFor(seenFor)
-        seenFor = 0
-    else:
-        quads.generateGotoFor(0)
-
 def p_fill_gotof(p):
     '''
     fill_gotof : empty
@@ -1005,16 +993,31 @@ def p_insert_f_goto_for(p):
     '''
     insert_f_goto_for : empty
     '''
-    # address = FD.getVarAddress(p[1])
-    # currType = FD.getVarType(p[1])
-    # quads.insertOpAndType(address, currType)
     quads.generateForQuad()
+
+def p_insert_goto_for(p):
+    '''
+    insert_goto_for : empty
+    '''
+    global seenFor
+    if (seenFor == 2):
+        quads.generateGotoFor(seenFor)
+        seenFor = 0
+    else:
+        quads.generateGotoFor(0)
+
 
 def p_fill_f_goto_for(p):
     '''
     fill_f_goto_for : empty
     '''
-    quads.fillFGotoFor()
+    global seenFor
+    print(seenFor)
+    if (seenFor == 2):
+        quads.fillFGotoFor(seenFor)
+    else:
+        quads.fillFGotoFor(0)
+    # quads.fillFGotoFor()
 
 def p_assign_counter(p):
     '''

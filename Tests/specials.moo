@@ -1,22 +1,54 @@
 var float x, y;
 var file arch1;
-var char key, h256, hmd5;
+var file arch2;
+var char key, encrypted, decrypted, string, string_hash, encrypted_hash;
+var char encrypted_file;
+var char hmd5, h256;
 
 main(){
+    
+     # String encryption
+     key = generate_key()
+     string = "this string";
+     encrypted = encrypt(string, key)
+     print("encrypted string ",encrypted)
+     print("\n")
 
-#     x = input()
-#     print("Hello", x , 1 + 2)
-#   
-#     key = generate_key()
-#     arch1 = open("file.txt")
-#    
-#     hmd5 = hash_md5(arch1)
-#     encrypt(arch1, key)
-#     h256 = hash_sha256(arch1)
-#
-#    write("hello", arch1)
-#    decrypt(arch1, key)
-#    close(arch1)
-    hash_sha256(arch1)
-    hash_md5(arch1)
+     string_hash = hash_md5(string)
+     encrypted_hash = hash_md5(string)
+
+     if (string_hash -eq encrypted_hash){
+            print("They are different. Is one encrypted?")
+         }else{
+            print("They are still the same!")
+         }
+     print("\n")
+
+     decrypted = decrypt(string, key)
+     print("decrypted string ", decrypted)
+     print("\n")
+
+     # File encryption
+     arch1 = open("file1.txt")
+     encrypted_file = encrypt(arch1, key)
+     print("encrypted_file " ,encrypted_file)
+     print("\n")
+
+     # Hash check
+     hmd5 = hash_md5(arch1)
+     h256 = hash_sha256(arch1)
+     print("hash_md5 ",hmd5)
+     print("\n")
+     print("hash_sha256 ", h256)
+     print("\n")
+
+     close(arch1)
+
 }
+
+    
+
+#    print(key)
+#    write("hello", arch1)
+#    hash_sha256(arch1)
+#    hash_md5(arch1)

@@ -345,12 +345,35 @@ class VirtualMemory:
             # print(f"new value in {address} is {self.constAndGlobal[address]}")
 
     def getValue(self, scope, address):
+        try:
+            if (scope == CONV['local']):
+                return self.local[address]
+            elif (scope == CONV['global'] or scope == CONV['constant']):
+                return self.constAndGlobal[address]
+        except KeyError:
+            print(f"ERROR: Variable doesn't exist.")
+            print(address)
+            exit()
+
+    def popAddress(self, scope, address):
         if (scope == CONV['local']):
-            return self.local[address]
+            self.local.pop(address)
         elif (scope == CONV['global'] or scope == CONV['constant']):
-            return self.constAndGlobal[address]
+            self.constAndGlobal.pop(address)
         else:
             print(f"ERROR: Could not get value for address {address} in scope{scope}.")
+
+    def findKey(self, value):
+        try:
+            for key, val in self.local.items():
+                if val == value:
+                    return key
+
+            for key, val in self.constAndGlobal.items():
+                if val == value:
+                    return key
+        except KeyError:
+            return None
 
     # PRINT MEMORY
     def printMem(self):

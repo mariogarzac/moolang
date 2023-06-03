@@ -45,7 +45,6 @@ class QuadrupleTable:
         self.paramCounter = 0
         self.quadPointer = 0
         self.address = 1
-        self.addressTable = []
         self.eraTable = [0,0,0,0,0]
 
     # <INSERT INTO STACK>
@@ -85,9 +84,6 @@ class QuadrupleTable:
             self.operatorStack.pop(self.operatorStack.index(CONV['(']))
         except ValueError:
             print("Not Found")
-
-    def popAddress(self):
-        return self.addressTable.pop()
 
     # <GET FROM STACK OR GET POINTER>
     def getOperator(self):
@@ -139,7 +135,6 @@ class QuadrupleTable:
         print("OPERANDSTACK",self.operandStack)
         print("OPERATORSTACK",self.operatorStack)
         print("JUMPS",self.jumpStack)
-        print("ADDRESS",self.addressTable)
         print("\n")
 
     def convertOp(self, op):
@@ -175,7 +170,6 @@ class QuadrupleTable:
             self.quads.append(Quadruple(operator, None, None, operand))
         elif (operator == CONV['input']):
             self.quads.append(Quadruple(operator, None, None, tmpAddress))
-            self.addressTable.append(tmpAddress)
 
         self.quadPointer += 1
 
@@ -261,7 +255,6 @@ class QuadrupleTable:
         operator = self.popOperator()
         operand = self.popOperand()
         self.quads.append(Quadruple(operator, None, operand, tmpAddress))
-        self.addressTable.append(tmpAddress)
         self.quadPointer += 1
 
     def generateFileFunc(self):
@@ -293,12 +286,11 @@ class QuadrupleTable:
 
     def generateGKey(self,tmpAddress):
         self.quads.append(Quadruple(CONV['generate_key'], None, None, tmpAddress))
-        self.addressTable.append(tmpAddress)
         self.quadPointer += 1
 
     def generateEncryptDecrypt(self,operator, key, keyType, file, fileType, tmpAddress):
         if (fileType == CONV['file'] or fileType == CONV['char']):
-            self.quads.append(Quadruple(operator, file, key, tmpAddress))
+            self.quads.append(Quadruple(operator, file, key, file))
             self.quadPointer += 1
         else:
             print("ERROR: Data to encrypt must be a string or a file.")
@@ -308,7 +300,6 @@ class QuadrupleTable:
         if(operandType == CONV['file'] or operandType == CONV['char']):
             self.quads.append(Quadruple(operator, operand, None, tmpAddress))
             self.quadPointer += 1
-            self.addressTable.append(tmpAddress)
         else: 
             print(f"ERROR: {operator} must have a string or file as an argument.")
             exit()
@@ -316,9 +307,9 @@ class QuadrupleTable:
     def assignSpFunc(self):
         spFunc = self.popOperator()
         var = self.popOperand()
-        address = self.popAddress()
+        address = self.quads[self.quadPointer - 1].address
 
-        ops = [CONV['generate_key'], CONV['hash_md5'], CONV['hash_sha256']]
+        ops = [CONV['generate_key'], CONV['hash_md5'], CONV['hash_sha256'], CONV['encrypt'], CONV['decrypt']]
 
         if(spFunc == CONV['open']):
             argumentType = self.popType()
@@ -373,15 +364,6 @@ class QuadrupleTable:
         self.jumpStack.append(gotof) # to fill gotof while for
         self.quadPointer += 1
     
-    def generateGotoFor(self, seen):
-        gotof = self.popJump()
-        if (seen == 2):
-            self.quads.append(Quadruple(CONV['goto'],None, None, f"${gotof - 3}"))
-            # self.jumpStack.append(gotof) # to fill gotof while for
-        else:
-            self.quads.append(Quadruple(CONV['goto'],None, None, f"${gotof - 1}"))
-        self.quadPointer += 1
-
     # IF
     def generateGotoIf(self):
         self.quadPointer += 1
@@ -440,15 +422,27 @@ class QuadrupleTable:
             print(f"ERROR: For loop parameters must be of type int") 
             exit()
 
-    def fillFGotoFor(self):
+    def fillFGotoFor(self, seenFor):
         quadToFill = self.popJump()
-        self.quads[quadToFill].address = f"${len(self.quads) + 1}"
+        if (seenFor == 2):
+            self.quads[quadToFill].address = f"${len(self.quads) - 1}"
+        else:
+            self.quads[quadToFill].address = f"${len(self.quads) + 1}"
+
         self.jumpStack.append(quadToFill -  2) 
+
+    def generateGotoFor(self, seen):
+        gotof = self.popJump()
+        if (seen == 2):
+            self.quads.append(Quadruple(CONV['goto'],None, None, f"${gotof - 3}"))
+            # self.jumpStack.append(gotof) # to fill gotof while for
+        else:
+            self.quads.append(Quadruple(CONV['goto'],None, None, f"${gotof - 1}"))
+        self.quadPointer += 1
+
 
     # moves the for control variable before the goto
     def moveCounterQuads(self):
-
-        # pop gotof jump
         # Gets the quad position
         quadToMove = self.popJump() 
 

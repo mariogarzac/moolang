@@ -1,11 +1,12 @@
 
 var float x,y;
 var float i;
+var char key;
 
 
 func funcDos(float a) -> float {
     for (i = 0, i -lt 10, i = i + 1){
-        generate_key()
+        key = generate_key()
         }
 
     if (x -lt a){
