@@ -36,6 +36,7 @@ counter = 0
 input = ""
 hasReturn = False
 seenFor = 0
+cameFromFunc = False
 
 quads = QuadrupleTable()
 V = V()
@@ -247,18 +248,16 @@ def p_variable_2(p):
 # var assignment 
 def p_assignment(p):
     '''
-    assignment : variable EQUAL assignment_1 
+    assignment : variable EQUAL push_to_operator_stack assignment_1
     '''
 
 def p_assignment_1(p):
     '''
-    assignment_1 : push_to_operator_stack exp assign_var SEMICOL 
-                 | std_func assign_std_func
+    assignment_1 : exp assign_var SEMICOL 
                  | CTE_CHAR push_string_operand assign_var SEMICOL
-                 | sp_func assign_sp_func
                  | c_input assign_input
+                 | sp_func assign_sp_func
     '''
-                 # | factor push_to_operand_stack assign_var SEMICOL
 
 # read user input
 def p_c_input(p):
@@ -573,8 +572,15 @@ def p_factor(p):
            | variable
            | CTE_INT push_int_operand
            | CTE_FLOAT push_float_operand
-           | std_func
+           | std_func came_from_func
     '''
+
+def p_came_from_func(p):
+    '''
+    came_from_func : empty
+    '''
+    global cameFromFunc
+    cameFromFunc = True
 
 
 # ------------------------------------------------------------------------------
@@ -640,11 +646,18 @@ def p_assign_var(p):
     '''
     assign_var : empty
     '''
-    rightType = quads.popType()
-    leftType = quads.popType()
-    resType = quads.checkTypeMismatch(leftType, rightType, CONV['='])
-    tmpAddress = FD.addTmpVariable(resType)
-    quads.generateQuad(CONV['='], rightType, leftType, resType, tmpAddress)
+    global currFuncId, cameFromFunc
+    if (cameFromFunc):
+        quads.printStacks()
+        address = FD.getVarAddress(currFuncId)
+        quads.insertOpAndType(address, FD.getFuncType(currFuncId))
+    else:
+        rightType = quads.popType()
+        leftType = quads.popType()
+        resType = quads.checkTypeMismatch(leftType, rightType, CONV['='])
+        tmpAddress = FD.addTmpVariable(resType)
+        quads.generateQuad(CONV['='], rightType, leftType, resType, tmpAddress)
+    cameFromFunc = False
 
 def p_assign_sp_func(p):
     '''
@@ -653,18 +666,6 @@ def p_assign_sp_func(p):
     global currModuleId
     quads.insertOperator(CONV[currModuleId])
     quads.assignSpFunc()
-
-def p_assign_std_func(p):
-    '''
-    assign_std_func : empty
-    '''
-    '''
-    TODO: checar si func también
-    '''
-    global currFuncId
-    address = FD.getVarAddress(currFuncId)
-    quads.insertOpAndType(address, FD.getFuncType(currFuncId))
-    quads.assignStdFunc()
 
 def p_assign_input(p):
     '''
@@ -829,6 +830,7 @@ def p_push_to_operator_stack(p):
     '''
     push_to_operator_stack : empty
     '''
+    print(p[-1])
     quads.insertOperator(CONV[p[-1]])
 
 def p_push_print_and_input(p):

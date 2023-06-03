@@ -1,19 +1,16 @@
 
-var float x,y;
-var float i;
-var char key;
+var int i,x,y;
 
 
-func funcDos(float a) -> float {
-    for (i = 0, i -lt 10, i = i + 1){
-        key = generate_key()
-        }
-
-    if (x -lt a){
-         x = 10 /2 * 5 + y - 4;
-        }
+func funcDos(float a) -> int {
          return x;
     }
+
+main(){
+    var float y;
+    i = funcDos(y);
+
+}
 
 # func funcTres(float a, float b) -> float {
 #     if (a -lt b){
@@ -26,8 +23,3 @@ func funcDos(float a) -> float {
 #     return 0.0;
 #     }
 
-main(){
-    var int i;
-    funcDos(4/2)
-
-}
