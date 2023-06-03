@@ -210,6 +210,7 @@ class VirtualMemory:
         else:
             print("There are no more const file variables left.")
 
+
     # FUNCTION THAT USES OTHER CREATE FUNCTIONS TO MAKE A SPACE IN MEMORY
     def createMemory(self, scope, varType):
         address = 0
@@ -267,6 +268,7 @@ class VirtualMemory:
             print(f"ERROR: Unknown scope")
             exit()
         return address
+
         
     #--------------------------------------------------------------------------
     # GETTERS
@@ -334,6 +336,15 @@ class VirtualMemory:
     def addToConstantMemory(self, address, value):
         self.constAndGlobal.update({address : value})
 
+    def findConstant(self, value):
+            for key, val in self.constAndGlobal.items():
+                if (key >= self.constIntStart and key <= self.constBoolEnd):
+                    if val == value:
+                        return key
+                else:
+                    pass
+            return None
+
     #--------------------------------------------------------------------------
 
     def setValue(self,scope, address, value):
@@ -362,6 +373,26 @@ class VirtualMemory:
             self.constAndGlobal.pop(address)
         else:
             print(f"ERROR: Could not get value for address {address} in scope{scope}.")
+
+    def popLocalMemory(self):
+        self.local.clear()
+        self.localIntCounter = self.localIntStart  
+        self.localFloatCounter = self.localFloatStart  
+        self.localCharCounter = self.localCharStart  
+        self.localFileCounter = self.localFileStart  
+        self.localBoolCounter = self.localBoolStart  
+
+    def generateEra(self, ints, floats, chars, files, bools):
+        for i in range(ints):
+            self.createMemory(CONV['local'], CONV['int'])
+        for i in range(floats):
+            self.createMemory(CONV['local'], CONV['float'])
+        for i in range(chars):
+            self.createMemory(CONV['local'], CONV['char'])
+        for i in range(files):
+            self.createMemory(CONV['local'], CONV['file'])
+        for i in range(bools):
+            self.createMemory(CONV['local'], CONV['bool'])
 
     def findKey(self, value):
         try:
