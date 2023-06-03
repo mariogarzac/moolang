@@ -1,13 +1,17 @@
 
-var int i,x,y;
+var int i,x;
+var float y;
 
 
 func funcDos(float a) -> int {
+    y = x + y / 2;
          return x;
     }
 
 main(){
-    var float y;
+    var float p;
+
+    p = x + y / 2;
     i = funcDos(y);
 
 }
