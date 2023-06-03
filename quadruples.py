@@ -17,9 +17,6 @@ class Quadruple:
         except ValueError:
             print(f"{self.operator} {self.leftOperand} {self.rightOperand} {self.address}")
     
-    def writeContents(self):
-        print(f"{self.operator} {self.leftOperand} {self.rightOperand} {self.address}\n")
-
     def getLeftOperand(self):
         return self.leftOperand
 
@@ -103,12 +100,6 @@ class QuadrupleTable:
 
     def getQuadPointer(self):
         return self.quadPointer
-
-    def getQuads(self):
-        with open ("q.csv", "w", newline="") as file:
-            writer = csv.writer(file)
-            for quadruple in self.quads:
-                writer.writerow([quadruple.operator, quadruple.leftOperand, quadruple.rightOperand, quadruple.address])
 
     # <TYPE CHECKING>
     def checkTypeMismatch(self, leftType, rightType, operator):

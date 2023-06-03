@@ -8,7 +8,9 @@ var char hmd5, h256;
 main(){
     
      # String encryption
+     arch2 = open("key.txt")
      key = generate_key()
+     write(key, arch2)
      string = "this string";
      encrypted = encrypt(string, key)
      print("encrypted string ",encrypted)

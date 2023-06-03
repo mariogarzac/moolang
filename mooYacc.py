@@ -410,7 +410,13 @@ def p_open_file_1(p):
 
 def p_write_file(p):
     '''
-    write_file : WRITE get_module_id LPAREN CTE_CHAR insert_string_param COMMA ID insert_file_id RPAREN insert_file_func
+    write_file : WRITE get_module_id LPAREN write_file_1 COMMA ID insert_file_id RPAREN insert_file_func
+    '''
+
+def p_write_file_1(p):
+    '''
+    write_file_1 : CTE_CHAR insert_string_param
+                 | ID push_to_operand_stack
     '''
 
 def p_close_file(p):
