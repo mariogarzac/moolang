@@ -1,7 +1,4 @@
-#var float z,y;
-#var int x;
-#var file  arch2;
-
+var int x;
 
 main(){
 var int i,j, k;
@@ -18,16 +15,17 @@ for (i = 0, i -lt 10, i = i + 1){
 for (i = 0, i -lt 10, i = i + 1){
         print("i")
 }
+
+while(x -lt 10){
+    while (i -lt 10){
+        print("(",x, ",",i, ")")
+        i = (i + 1);
+    }
+    i = 0;
+    print("\n")
+        x = (x + 1);
 }
 
-#while(x -lt 10){
-#    while (i -lt 10){
-#        print("(",x, ",",i, ")")
-#        i = (i + 1);
-#    }
-#    i = 0;
-#    print("\n")
-#        x = (x + 1);
-#}
+}
 
       
