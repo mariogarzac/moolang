@@ -1,6 +1,5 @@
 from cube import CUBE
 from cube import CONV
-import csv
 
 class Quadruple:
     def __init__(self, operator, leftOperand, rightOperand, address):
@@ -236,9 +235,10 @@ class QuadrupleTable:
 
         funcType = self.popType()
         varType = self.popType()
+        operator = self.popOperator()
 
-        self.checkTypeMismatch(varType, funcType, CONV['='])
-        self.quads.append(Quadruple(CONV['='], funcName, None, var))
+        self.checkTypeMismatch(varType, funcType, operator)
+        self.quads.append(Quadruple(operator, funcName, None, var))
         self.quadPointer += 1
     # -------------------------------------------------------------------------
     # <SPECIAL FUNCS>
@@ -284,8 +284,12 @@ class QuadrupleTable:
             self.quads.append(Quadruple(operator, file, key, file))
             self.quadPointer += 1
         else:
-            print("ERROR: Data to encrypt must be a string or a file.")
-            exit()
+            if (operator == CONV['encrypt']):
+                print("ERROR: Data to encrypt must be a string or a file.")
+                exit()
+            elif(operator == CONV['decrypt']):
+                print("ERROR: Data to decrypt must be a string or a file.")
+                exit()
 
     def generateHash(self,operator, operand, operandType, tmpAddress):
         if(operandType == CONV['file'] or operandType == CONV['char']):
@@ -310,10 +314,10 @@ class QuadrupleTable:
                     self.quads.append(Quadruple(CONV['='], address, None, var))
                     self.quadPointer += 1
                 else:
-                    print("ERROR: Var type must be file")
+                    print("ERROR: Variable type must be file or string")
                     exit()
             else: 
-                print(f"ERROR: Argument for open must be of type char, not {self.convertOp(argumentType)}")
+                print(f"ERROR: Argument for open must be of type string, not {self.convertOp(argumentType)}")
                 exit()
 
         elif(spFunc in ops):
@@ -340,7 +344,6 @@ class QuadrupleTable:
     def generateGotoF(self):
         resType = self.popType()
         if (resType == CONV['bool']):
-            self.eraTable[resType - 1] += 1
             res = self.popOperand()
             self.quads.append(Quadruple(CONV['gotof'], res, None, None))
             self.jumpStack.append(self.quadPointer) # jump back here
