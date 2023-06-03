@@ -1,4 +1,3 @@
-import pprint as p
 import json 
 from cube import CONV
 from VirtualMemory import * 
@@ -140,12 +139,17 @@ class FunctionDirectory:
         return address
 
     def addConstant(self,scope, value, varType):
-        # scope = CONV['constant']
-        address = self.memory.createMemory(scope, varType)
         if (scope == CONV['local']):
+            address = self.memory.createMemory(scope, varType)
             self.memory.addToLocalMemory(address, varType)
         else:
-            self.memory.addToConstantMemory(address, value)
+            if (scope == CONV['constant']):
+                constant = self.memory.findConstant(value)
+                if (constant == None):
+                    address = self.memory.createMemory(scope, varType)
+                    self.memory.addToConstantMemory(address, value)
+                else:
+                    return constant
         return address
     
     def addTmpVariable(self, varType):
@@ -181,8 +185,8 @@ class FunctionDirectory:
         with open("func.json", "w") as file:
             json.dump(self.funcDirectory, file)
 
-    def getMemory(self):
-        self.memory.getMemory()
+    def popLocalMemory(self):
+        self.memory.popLocalMemory()
 
     # HELPER FUNCTIONS
     def clearVarTable(self):
