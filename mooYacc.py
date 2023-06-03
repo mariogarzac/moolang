@@ -1,11 +1,4 @@
-import os
 import pickle
-
-'''
-TODO:
-    - func calls with two params
-    - funcs
-'''
 import ply.yacc as yacc
 from mooLex import tokens 
 from quadruples import QuadrupleTable 
@@ -49,8 +42,18 @@ FD = FD()
 def p_prog(p):
     '''
     prog : insert_goto_main prog_1 set_scope prog_2 fill_goto_main MAIN get_func_id\
-           create_main update_func_dir LPAREN RPAREN LCURLY prog_1 block generate_endfunc RCURLY 
+           create_main update_func_dir LPAREN RPAREN LCURLY prog_1 block RCURLY generate_endfunc update_era_main
     '''
+
+def p_update_era_main(p):
+    '''
+    update_era_main : empty
+    '''
+    era = quads.getEraTable()
+    FD.updateEra('main', era)
+    quads.resetEra()
+    FD.popLocalMemory()
+
 
 def p_insert_goto_main(p):
     '''
@@ -152,6 +155,7 @@ def p_update_era(p):
     era = quads.getEraTable()
     FD.updateEra(currFuncId, era)
     quads.resetEra()
+    FD.popLocalMemory()
 
 def p_check_return(p):
     '''
@@ -651,12 +655,14 @@ def p_assign_var(p):
         quads.printStacks()
         address = FD.getVarAddress(currFuncId)
         quads.insertOpAndType(address, FD.getFuncType(currFuncId))
+        quads.assignStdFunc()
     else:
         rightType = quads.popType()
         leftType = quads.popType()
-        resType = quads.checkTypeMismatch(leftType, rightType, CONV['='])
+        operator = quads.popOperator()
+        resType = quads.checkTypeMismatch(leftType, rightType, operator)
         tmpAddress = FD.addTmpVariable(resType)
-        quads.generateQuad(CONV['='], rightType, leftType, resType, tmpAddress)
+        quads.generateQuad(operator, rightType, leftType, resType, tmpAddress)
     cameFromFunc = False
 
 def p_assign_sp_func(p):
@@ -830,7 +836,6 @@ def p_push_to_operator_stack(p):
     '''
     push_to_operator_stack : empty
     '''
-    print(p[-1])
     quads.insertOperator(CONV[p[-1]])
 
 def p_push_print_and_input(p):
@@ -1020,7 +1025,6 @@ def p_fill_f_goto_for(p):
     fill_f_goto_for : empty
     '''
     global seenFor
-    print(seenFor)
     if (seenFor == 2):
         quads.fillFGotoFor(seenFor)
     else:
@@ -1073,7 +1077,8 @@ try:
     print("---------------------------")
     quads.printTheQuads()
     print("---------------------------")
-    # FD.printFuncDir()
+    FD.printFuncDir()
+    print("---------------------------")
     # print("***************************")
     # FD.printVars()
     # print("---------------------------")
