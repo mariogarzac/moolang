@@ -1,6 +1,5 @@
 from cryptography.fernet import Fernet, InvalidToken
 import hashlib
-import os
 import pickle
 from cube import CONV
 
@@ -43,6 +42,10 @@ class VirtualMachine:
 
         return operator, leftOperand, rightOperand, address
 
+    def generateEraMemory(self, funcId):
+        era = self.funcs[funcId]['fResources']
+        self.memory.generateEra(era[CONV['int']],era[CONV['float']],era[CONV['char']],era[CONV['file']],era[CONV['bool']],)
+
     def initialize(self):
         while (self.ip < len(self.quads)):
             atts = self.parseQuads(self.quads)
@@ -51,8 +54,10 @@ class VirtualMachine:
             rightOperand = atts[2]
             address = atts[3]
 
+            #def generateEra(self, ints, floats, chars, files, bools):
             # print(f"now parsing quad {self.ip} with {atts}")
             if (operator == CONV['main']):
+                era = self.generateEraMemory('main')
                 self.ip = address - 1
 
             elif (operator == CONV['+']):
@@ -279,21 +284,7 @@ memory  = data['memory']
 vm = VirtualMachine(quads, funcs, memory)
 vm.initialize()
 
-# elif(operator == CONV['void']):
-# elif(operator == CONV['int']):
-# elif(operator == CONV['float']):
-# elif(operator == CONV['char']):
-# elif(operator == CONV['file']):
-# elif(operator == CONV['bool']):
-
-# elif(operator == CONV['local']):
-# elif(operator == CONV['global']):
-# elif(operator == CONV['constant']):
-
-
-
 # elif(operator == CONV['return']):
-# elif(operator == CONV['main']):
 # elif(operator == CONV['gosub']):
 # elif(operator == CONV['era']):
 # elif(operator == CONV['param']):
