@@ -406,6 +406,12 @@ class VirtualMemory:
         except KeyError:
             return None
 
+    def getConstAndGlobal(self):
+        return self.constAndGlobal
+
+    def copyConstAndGlobal(self, memory):
+        self.constAndGlobal = memory.copy()
+
     # PRINT MEMORY
     def printMem(self):
         print(json.dumps(self.local, indent=4, sort_keys=True))

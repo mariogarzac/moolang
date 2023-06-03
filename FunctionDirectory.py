@@ -44,6 +44,7 @@ class FunctionDirectory:
         self.funcDirectory[funcId]["fParams"] = []
         self.funcDirectory[funcId]["fParamId"] = []
 
+
         # Add global variable with function name
         self.vars[CONV['local']]["fName"] = funcId
         self.vars[CONV['global']]["vars"][funcId] = {}
@@ -96,7 +97,11 @@ class FunctionDirectory:
                  }
 
     def getFuncParams(self, funcId):
-        return self.funcDirectory[funcId]["fParams"][:]
+        try:
+            return self.funcDirectory[funcId]["fParams"][:]
+        except KeyError:
+            print(f"ERROR: Functions with name {funcId} does not exist.")
+            exit()
 
     # GET IT
     def getVarType(self,varId):
@@ -120,7 +125,12 @@ class FunctionDirectory:
         return self.vars[scope]["fName"]
 
     def getFuncType(self,funcId):
-        return self.funcDirectory[funcId]["fType"]
+        try:
+            return self.funcDirectory[funcId]["fType"]
+        except KeyError:
+            print(f"ERROR: Functions with name {funcId} does not exist.")
+            exit()
+
 
     def getFuncPointer(self, funcId):
         return self.funcDirectory[funcId]["pointer"]

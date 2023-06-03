@@ -200,9 +200,16 @@ class QuadrupleTable:
             returnType = self.popType()
             if (funcType == returnType):
                 operator = self.popOperator()
+                
+                address = self.popOperand()
+                tmpAddress = self.popOperand()
                 operand = self.popOperand()
-                self.quads.append(Quadruple(operator,None , None, operand))
+
+                self.quads.append(Quadruple(operator, None, operand, tmpAddress))
                 self.quadPointer += 1
+                self.quads.append(Quadruple(CONV['='], tmpAddress, None, address))
+                self.quadPointer += 1
+
             else:
                 print(f"ERROR: Function is type {self.convertOp(funcType)} and return is type {self.convertOp(returnType)}.")
                 exit()
@@ -218,12 +225,10 @@ class QuadrupleTable:
                     exit()
                 else:
                     pass
-            funcName = self.popOperand() 
             pointer = self.popOperand() 
-            tmpAddress = self.popOperand()
-            self.quads.append(Quadruple(CONV['gosub'], funcName, f"${pointer}", tmpAddress))
-            self.quadPointer += 1
-            self.quads.append(Quadruple(CONV['='], tmpAddress, None, funcName))
+            funcName = self.popOperand() 
+            
+            self.quads.append(Quadruple(CONV['gosub'], None, funcName, f"${pointer}"))
             self.quadPointer += 1
         else:
             print(f"ERROR: Expected {len(fParams)} and recieved {self.paramCounter}")
@@ -236,7 +241,7 @@ class QuadrupleTable:
         funcType = self.popType()
         varType = self.popType()
         operator = self.popOperator()
-
+        
         self.checkTypeMismatch(varType, funcType, operator)
         self.quads.append(Quadruple(operator, funcName, None, var))
         self.quadPointer += 1

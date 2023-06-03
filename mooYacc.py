@@ -652,7 +652,6 @@ def p_assign_var(p):
     '''
     global currFuncId, cameFromFunc
     if (cameFromFunc):
-        quads.printStacks()
         address = FD.getVarAddress(currFuncId)
         quads.insertOpAndType(address, FD.getFuncType(currFuncId))
         quads.assignStdFunc()
@@ -745,7 +744,15 @@ def p_generate_return(p):
     global currFuncId
     global hasReturn
     hasReturn = True
-    quads.insertFuncType(FD.getFuncType(currFuncId))
+
+    funcType = FD.getFuncType(currFuncId)
+    tmpAddress = FD.addTmpVariable(FD.getFuncType(currFuncId))
+    address = FD.getVarAddress(currFuncId)
+
+    quads.insertFuncType(funcType)
+    quads.insertOperand(tmpAddress)
+    quads.insertOperand(address)
+
     quads.generateReturn()
 
 def p_generate_func_call(p):
@@ -756,10 +763,11 @@ def p_generate_func_call(p):
     params = FD.getFuncParams(currFuncId)
     pointer = FD.getFuncPointer(currFuncId)
     address = FD.getVarAddress(currFuncId)
+
     quads.insertOperand(address)
     quads.insertOperand(pointer)
-    # tmpAddress = FD.getVarAddress(currFuncId)
-    quads.insertOperand(currFuncId)
+
+    # quads.insertOperand(currFuncId)
     quads.generateFuncCall(params)
 
 def p_push_func_id(p):
@@ -1077,13 +1085,13 @@ try:
     print("---------------------------")
     quads.printTheQuads()
     print("---------------------------")
-    FD.printFuncDir()
-    print("---------------------------")
+    # FD.printFuncDir()
+    # print("---------------------------")
     # print("***************************")
     # FD.printVars()
     # print("---------------------------")
-    FD.printMemory()
-    print("---------------------------")
+    # FD.printMemory()
+    # print("---------------------------")
 
 
 except EOFError:
