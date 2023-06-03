@@ -3,8 +3,9 @@ var int x;
 var int i;
 
 
-func funcDos() -> int {
-    for (x = 0, x -lt 10, x = x+1){
+func funcDos(int cont ,int b) -> int {
+    print("x vale ", cont, b)
+    for (x = cont, x -lt 10, x = x+1){
             print(x, " ")
 
         }
@@ -14,7 +15,7 @@ func funcDos() -> int {
 
 main(){
     
-    i = funcDos();
+    i = funcDos(1, 2);
     print(i)
 
 }

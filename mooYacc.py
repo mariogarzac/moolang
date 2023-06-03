@@ -348,13 +348,11 @@ def p_insert_func_call_param(p):
     '''
     insert_func_call_param : empty
     '''
-    '''
-    TODO: add variable address (far assignment)
-    # address = quads.getOperand()
-    # quads.insertOperand(address)
-    '''
-    # print("insert_func_call_param")
-    # quads.printStacks()
+    address = quads.getOperand()
+    paramAddress = FD.getParamAddress(currFuncId, quads.getParamCounter())
+
+    quads.insertOperand(paramAddress)
+    quads.insertOperand(address)
     quads.generateParam()
 
 
@@ -707,17 +705,21 @@ def p_add_param(p):
     '''
     add_param : empty
     '''
-    global  currScope, currId, currType, currFuncId, currXDims, currYDims
+    global  currScope, currId, currType, currFuncId, currXDims, currYDims, counter
     tmpVar = V.addVar(currId, currType, currXDims, currYDims, 0)
-    FD.addParam(currFuncId, currId, currType)
+    quads.eraTable[currType - 1] += 1
+
     FD.addVariable(currScope, tmpVar)
+    address = FD.getVarAddress(currId)
+    print(address)
+    FD.addParam(currFuncId, address, currType)
+    counter += 1
 
 def p_reset_param_counter(p):
     '''
     reset_param_counter : empty
     '''
     quads.resetParamCounter()
-
 
 def p_add_variable(p):
     '''
@@ -1085,8 +1087,8 @@ try:
     print("---------------------------")
     quads.printTheQuads()
     print("---------------------------")
-    # FD.printFuncDir()
-    # print("---------------------------")
+    FD.printFuncDir()
+    print("---------------------------")
     # print("***************************")
     # FD.printVars()
     # print("---------------------------")

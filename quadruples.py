@@ -100,6 +100,9 @@ class QuadrupleTable:
     def getQuadPointer(self):
         return self.quadPointer
 
+    def getParamCounter(self):
+        return self.paramCounter
+
     # <TYPE CHECKING>
     def checkTypeMismatch(self, leftType, rightType, operator):
         try:
@@ -177,8 +180,10 @@ class QuadrupleTable:
     def generateParam(self):
         self.paramCounter += 1
         varName = self.popOperand()
-        prevRes = self.quads[self.quadPointer - 1].address
-        self.quads.append(Quadruple(CONV['param'], prevRes, None, f"param{self.address}"))
+        # prevRes = self.quads[self.quadPointer - 1].address
+        operand = self.popOperand()
+        paramAddress = self.popOperand()
+        self.quads.append(Quadruple(CONV['param'], paramAddress, None, operand))
         self.address += 1
         self.quadPointer += 1
 

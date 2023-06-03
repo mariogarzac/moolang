@@ -42,7 +42,7 @@ class FunctionDirectory:
         self.funcDirectory[funcId]["pointer"] = 0
         self.funcDirectory[funcId]["fResources"] = {CONV['int']:0, CONV['float']:0, CONV['char']:0, CONV['file']:0, CONV['bool']:0 },
         self.funcDirectory[funcId]["fParams"] = []
-        self.funcDirectory[funcId]["fParamId"] = []
+        self.funcDirectory[funcId]["fParamAddress"] = []
 
 
         # Add global variable with function name
@@ -54,9 +54,12 @@ class FunctionDirectory:
         address = self.setAddress(CONV['global'], funcId, funcType)
         self.vars[CONV['global']]["vars"][funcId].update({"address" : address})
 
-    def addParam(self,funcId,paramId, paramType): 
-        self.funcDirectory[funcId]["fParamId"].append(paramId)
+    def addParam(self,funcId,paramAddress, paramType): 
+        self.funcDirectory[funcId]["fParamAddress"].append(paramAddress)
         self.funcDirectory[funcId]["fParams"].append(paramType)
+
+    def getParamAddress(self, funcId, position):
+        return self.funcDirectory[funcId]["fParamAddress"][position]
 
     def addVariable(self, scope, newVar):
         # get var id from newvar dictionary 
@@ -187,7 +190,6 @@ class FunctionDirectory:
             try:
                 return self.vars[CONV['global']]["vars"][varId]["address"]
             except KeyError:
-                self.printVars()
                 print(f"ERROR: Variable {varId} does not exist.")
                 exit()
 

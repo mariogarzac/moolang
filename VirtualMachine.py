@@ -91,12 +91,16 @@ class VirtualMachine:
                 scope = self.memory[self.memoryPointer].getScope(address)
                 self.memory[self.memoryPointer].setValue(scope, address, value)
 
-                valueScope = self.memory[self.memoryPointer].getScope(value)
-                
-                if (self.memoryPointer != 0 and valueScope == CONV['global']):
-                    scope = self.memory[0].getScope(address)
-                    self.memory[0].setValue(scope, address, value)
+                try:
+                    valueScope = self.memory[self.memoryPointer].getScope(value)
+                    self.memory[self.memoryPointer].setValue(scope, address, value)
+                    if (self.memoryPointer != 0 and valueScope == CONV['global']):
+                        scope = self.memory[0].getScope(address)
+                        self.memory[0].setValue(scope, address, value)
 
+                except TypeError:
+                   pass
+                
             elif(operator == CONV['print']):
                 scope = self.memory[self.memoryPointer].getScope(address)
                 value = self.memory[self.memoryPointer].getValue(scope, address)
@@ -197,7 +201,10 @@ class VirtualMachine:
                 era = self.generateEraMemory(address)
 
             elif(operator == CONV['param']):
-                pass
+                value = leftOperand
+                scope = self.memory[self.memoryPointer].getScope(address)
+                self.memory[self.memoryPointer].setValue(scope, address, value)
+
             elif(operator == CONV['endfunc']):
 
                 if (len(self.memory) == 1):
