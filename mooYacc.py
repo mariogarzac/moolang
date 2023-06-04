@@ -42,7 +42,7 @@ FD = FD()
 def p_prog(p):
     '''
     prog : insert_goto_main prog_1 set_scope prog_2 fill_goto_main MAIN get_func_id\
-           create_main update_func_dir LPAREN RPAREN LCURLY prog_1 block RCURLY generate_endfunc update_era_main
+           create_main update_pointer LPAREN RPAREN LCURLY prog_1 block RCURLY generate_endprog update_era_main
     '''
 
 def p_update_era_main(p):
@@ -53,7 +53,6 @@ def p_update_era_main(p):
     FD.updateEra('main', era)
     quads.resetEra()
     FD.popLocalMemory()
-
 
 def p_insert_goto_main(p):
     '''
@@ -67,16 +66,17 @@ def p_fill_goto_main(p):
     '''
     quads.fillGotoMain()
 
+def p_generate_endprog(p):
+    '''
+    generate_endprog : empty
+    '''
+    quads.generateEndprog()
+
 def p_generate_endfunc(p):
     '''
     generate_endfunc : empty
     '''
-    quads.generateEndfunc()
-
-def p_generate_func_endfunc(p):
-    '''
-    generate_func_endfunc : empty
-    '''
+    FD.updateEndfunc(currFuncId, quads.getQuadPointer())
     FD.clearVarTable()
     quads.generateEndfunc()
 
@@ -144,9 +144,17 @@ def p_sp_type(p):
 # functions
 def p_function(p):
     '''
-    function : FUNC ID get_func_id create_func LPAREN param RPAREN ARROW function_2 update_func_type update_func_dir\
-               LCURLY function_1 block RCURLY check_return generate_func_endfunc reset_return update_era
+    function : FUNC ID get_func_id create_func LPAREN param RPAREN ARROW function_2 update_func_type update_pointer\
+               LCURLY function_1 block RCURLY check_return generate_endfunc update_era
     '''
+
+def p_verify_params(p):
+    '''
+    verify_params : empty
+    '''
+    global currFuncId
+    params = FD.getFuncParams(currFuncId)
+    quads.verifyParams(params)
 
 def p_update_era(p):
     '''
@@ -166,14 +174,15 @@ def p_check_return(p):
     if (funcType != CONV['void']):
         quads.checkReturn(hasReturn)
     else:
+        hasReturn = False
         pass
 
-def p_reset_return(p):
-    '''
-    reset_return : empty
-    '''
-    global hasReturn
-    hasReturn = False
+# def p_reset_return(p):
+#     '''
+#     reset_return : empty
+#     '''
+#     global hasReturn
+#     hasReturn = False
 
 def p_function_1(p):
     '''
@@ -329,7 +338,7 @@ def p_for_loop_1(p):
 # standard functions
 def p_std_func(p):
     '''
-    std_func : ID push_func_id generate_era LPAREN std_func_1 RPAREN generate_func_call reset_param_counter
+    std_func : ID get_func_id push_func_id generate_era LPAREN std_func_1 verify_params RPAREN generate_func_call reset_param_counter
     '''
 
 def p_std_func_1(p):
@@ -651,7 +660,10 @@ def p_assign_var(p):
     global currFuncId, cameFromFunc
     if (cameFromFunc):
         address = FD.getVarAddress(currFuncId)
-        quads.insertOpAndType(address, FD.getFuncType(currFuncId))
+        if(currFuncId == 'main'):
+            pass
+        else:
+            quads.insertOpAndType(address, FD.getFuncType(currFuncId))
         quads.assignStdFunc()
     else:
         rightType = quads.popType()
@@ -691,7 +703,7 @@ def p_create_main(p):
     '''
     create_main : empty
     '''
-    global currFuncId, currType
+    global currFuncId
     FD.addFunc(currFuncId, CONV['void'])
 
 def p_create_func(p):
@@ -711,7 +723,6 @@ def p_add_param(p):
 
     FD.addVariable(currScope, tmpVar)
     address = FD.getVarAddress(currId)
-    print(address)
     FD.addParam(currFuncId, address, currType)
     counter += 1
 
@@ -733,11 +744,7 @@ def p_generate_era(p):
     '''
     generate_era : empty
     '''
-    # address = FD.getVarAddress(currFuncId)
-    # quads.insertOperand(address)
     quads.generateEra()
-    # print("generate era")
-    # quads.printStacks()
 
 def p_generate_return(p):
     '''
@@ -746,44 +753,41 @@ def p_generate_return(p):
     global currFuncId
     global hasReturn
     hasReturn = True
-
+    
     funcType = FD.getFuncType(currFuncId)
-    tmpAddress = FD.addTmpVariable(FD.getFuncType(currFuncId))
     address = FD.getVarAddress(currFuncId)
-
+    
     quads.insertFuncType(funcType)
-    quads.insertOperand(tmpAddress)
     quads.insertOperand(address)
-
+    # quads.insertOperand(address)
+    
     quads.generateReturn()
-
+    
 def p_generate_func_call(p):
     '''
     generate_func_call : empty
     '''
     global currFuncId
-    params = FD.getFuncParams(currFuncId)
     pointer = FD.getFuncPointer(currFuncId)
     address = FD.getVarAddress(currFuncId)
+    tmpAddress = FD.addTmpVariable(FD.getFuncType(currFuncId))
 
+    quads.insertOperand(tmpAddress)
     quads.insertOperand(address)
     quads.insertOperand(pointer)
 
-    # quads.insertOperand(currFuncId)
-    quads.generateFuncCall(params)
+    quads.generateFuncCall()
 
 def p_push_func_id(p):
     '''
     push_func_id : empty
     '''
     global currFuncId
-    currFuncId = p[-1]
-    # address = FD.getVarAddress(currFuncId)
-    quads.insertOperand(currFuncId)
+    quads.insertOpAndType(currFuncId, FD.getFuncType(currFuncId))
 
-def p_update_fund_dir(p):
+def p_update_pointer(p):
     '''
-    update_func_dir : empty
+    update_pointer : empty
     '''
     FD.updatePointer(currFuncId, quads.getQuadPointer())
 

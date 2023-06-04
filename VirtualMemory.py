@@ -284,6 +284,7 @@ class VirtualMemory:
         elif ((address >= self.localFileStart and address <= self.localFileEnd) or (address >= self.globalFileStart and address <= self.globalFileEnd) or (address >= self.constFileStart and address <= self.constFileEnd)):
             return CONV['file']
         else:
+            print(address)
             print("WHAT?! Atte. Your friendly neighborhood vars :*")
             exit()
 
@@ -294,9 +295,6 @@ class VirtualMemory:
             return CONV['global']
         elif (address >= self.constIntStart and address <= self.constBoolEnd):
             return CONV['constant']
-        else:
-            print("WHAT?! Atte. Your friendly neighborhood vars :*")
-            exit()
 
     # THIS FUNCTION WILL BE USED BY ARRAYS
     def createMoreMemory(self, scope, varType, size=1):

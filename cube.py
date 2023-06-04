@@ -43,7 +43,8 @@ CONV = {
     'gosub':         40,
     'era':           41,
     'param':         42,
-    'endfunc':       43
+    'endfunc':       43,
+    'endprog':       44
 }
 
 

@@ -111,6 +111,7 @@ class QuadrupleTable:
         except:
             lT = self.convertOp(leftType)
             rT = self.convertOp(rightType)
+            self.printTheQuads()
             print(f"ERROR: TypeMismatch <{lT}, {rT}>")
             exit()
 
@@ -180,7 +181,6 @@ class QuadrupleTable:
     def generateParam(self):
         self.paramCounter += 1
         varName = self.popOperand()
-        # prevRes = self.quads[self.quadPointer - 1].address
         operand = self.popOperand()
         paramAddress = self.popOperand()
         self.quads.append(Quadruple(CONV['param'], paramAddress, None, operand))
@@ -205,22 +205,32 @@ class QuadrupleTable:
             returnType = self.popType()
             if (funcType == returnType):
                 operator = self.popOperator()
-                
-                address = self.popOperand()
                 tmpAddress = self.popOperand()
-                operand = self.popOperand()
+                try:
+                    funcAddress = self.popOperand()
 
-                self.quads.append(Quadruple(operator, None, operand, tmpAddress))
-                self.quadPointer += 1
-                self.quads.append(Quadruple(CONV['='], tmpAddress, None, address))
-                self.quadPointer += 1
-
+                    self.quads.append(Quadruple(operator, funcAddress, None, tmpAddress))
+                    self.quadPointer += 1
+                except IndexError:
+                    self.quads.append(Quadruple(operator, None, None, tmpAddress))
+                    self.quadPointer += 1
             else:
                 print(f"ERROR: Function is type {self.convertOp(funcType)} and return is type {self.convertOp(returnType)}.")
                 exit()
 
-    def generateFuncCall(self, fParams):
-        # get func param types and verify types
+    def generateFuncCall(self):
+        pointer = self.popOperand() 
+        funcName = self.popOperand() 
+        tmpAddress = self.popOperand()
+        
+        self.quads.append(Quadruple(CONV['gosub'], None, funcName, f"${pointer}"))
+        self.quadPointer += 1
+
+        self.quads.append(Quadruple(CONV['='], funcName, None, tmpAddress))
+        self.quadPointer += 1
+
+    def verifyParams(self, fParams):
+        # compare the amount of parameters sent and expected
         if (self.paramCounter == len(fParams)):
             while (fParams):
                 argumentType = self.popType()
@@ -228,18 +238,12 @@ class QuadrupleTable:
                 if (paramType != argumentType):
                     print(f"ERROR: Param is type {self.convertOp(paramType)} and argument is type {self.convertOp(argumentType)}.")
                     exit()
-                else:
-                    pass
-            pointer = self.popOperand() 
-            funcName = self.popOperand() 
-            
-            self.quads.append(Quadruple(CONV['gosub'], None, funcName, f"${pointer}"))
-            self.quadPointer += 1
         else:
             print(f"ERROR: Expected {len(fParams)} and recieved {self.paramCounter}")
             exit()
 
     def assignStdFunc(self):
+        self.printStacks()
         funcName = self.popOperand()
         var = self.popOperand()
 
@@ -472,6 +476,10 @@ class QuadrupleTable:
 
     def generateEndfunc(self):
         self.quads.append(Quadruple(CONV['endfunc'], None, None, None))
+        self.quadPointer += 1
+
+    def generateEndprog(self):
+        self.quads.append(Quadruple(CONV['endprog'], None, None, None))
         self.quadPointer += 1
 
     # # DEBUGGING

@@ -21,7 +21,7 @@ class FunctionDirectory:
 
     def __init__ (self):
         # set initial function entry as global
-        self.funcDirectory = {"global" : {"fType":0, "pointer":0, "fResources":{CONV['int']:0, CONV['float']:0, CONV['char']:0, CONV['file']:0, CONV['bool']:0 }, "fParams": []}} 
+        self.funcDirectory = {"global" : {"fType":0, "pointer":0, "endfunc":0, "fResources":{CONV['int']:0, CONV['float']:0, CONV['char']:0, CONV['file']:0, CONV['bool']:0 }, "fParams": []}} 
         self.vars = {
                      CONV['global'] : {"fName" : "global", "vars" :{}},
                      CONV['local'] : {"fName" : 0, "vars" :{}}
@@ -40,6 +40,7 @@ class FunctionDirectory:
         self.funcDirectory[funcId] = {}
         self.funcDirectory[funcId]["fType"] = funcType
         self.funcDirectory[funcId]["pointer"] = 0
+        self.funcDirectory[funcId]["endfunc"] = 0
         self.funcDirectory[funcId]["fResources"] = {CONV['int']:0, CONV['float']:0, CONV['char']:0, CONV['file']:0, CONV['bool']:0 },
         self.funcDirectory[funcId]["fParams"] = []
         self.funcDirectory[funcId]["fParamAddress"] = []
@@ -90,6 +91,9 @@ class FunctionDirectory:
     def updatePointer(self,funcId, pointer):
         self.funcDirectory[funcId]["pointer"] = pointer
 
+    def updateEndfunc(self,funcId, pointer):
+        self.funcDirectory[funcId]["endfunc"] = pointer
+
     def updateEra(self, funcId, eraTable):
         self.funcDirectory[funcId]["fResources"] =  {
                  CONV['int']   : eraTable[0], 
@@ -137,6 +141,9 @@ class FunctionDirectory:
 
     def getFuncPointer(self, funcId):
         return self.funcDirectory[funcId]["pointer"]
+
+    def getFuncEndfunc(self, funcId):
+        return self.funcDirectory[funcId]["endfunc"]
 
     # VIRTUAL MEMORY
     def setAddress(self, scope,varId, varType):
