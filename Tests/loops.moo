@@ -2,6 +2,8 @@ var int x;
 
 main(){
 var int i,j, k;
+var char key;
+var file arch2;
 k = 0;
 
 for (i = 0, i -lt 10, i = i + 1){
