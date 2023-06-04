@@ -25,7 +25,6 @@ currScope = CONV['global']
 currXDims = 1
 currYDims = 1
 tmpDims = 0
-counter = 0
 input = ""
 hasReturn = False
 seenFor = 0
@@ -147,14 +146,6 @@ def p_function(p):
     function : FUNC ID get_func_id create_func LPAREN param RPAREN ARROW function_2 update_func_type update_pointer\
                LCURLY function_1 block RCURLY check_return generate_endfunc update_era
     '''
-
-def p_verify_params(p):
-    '''
-    verify_params : empty
-    '''
-    global currFuncId
-    params = FD.getFuncParams(currFuncId)
-    quads.verifyParams(params)
 
 def p_update_era(p):
     '''
@@ -338,7 +329,7 @@ def p_for_loop_1(p):
 # standard functions
 def p_std_func(p):
     '''
-    std_func : ID get_func_id push_func_id generate_era LPAREN std_func_1 verify_params RPAREN generate_func_call reset_param_counter
+    std_func : ID get_func_id push_func_id generate_era LPAREN std_func_1 RPAREN verify_params generate_func_call reset_param_counter
     '''
 
 def p_std_func_1(p):
@@ -353,12 +344,22 @@ def p_std_func_2(p):
                | empty
     '''
 
+def p_verify_params(p):
+    '''
+    verify_params : empty
+    '''
+    global currFuncId
+    params = FD.getFuncParams(currFuncId)
+    quads.verifyParams(params)
+
+
 def p_insert_func_call_param(p):
     '''
     insert_func_call_param : empty
     '''
     address = quads.getOperand()
     paramAddress = FD.getParamAddress(currFuncId, quads.getParamCounter())
+    quads.incrementParamCounter()
 
     quads.insertOperand(paramAddress)
     quads.insertOperand(address)
@@ -717,14 +718,13 @@ def p_add_param(p):
     '''
     add_param : empty
     '''
-    global  currScope, currId, currType, currFuncId, currXDims, currYDims, counter
+    global  currScope, currId, currType, currFuncId, currXDims, currYDims
     tmpVar = V.addVar(currId, currType, currXDims, currYDims, 0)
     quads.eraTable[currType - 1] += 1
 
     FD.addVariable(currScope, tmpVar)
     address = FD.getVarAddress(currId)
     FD.addParam(currFuncId, address, currType)
-    counter += 1
 
 def p_reset_param_counter(p):
     '''
@@ -1091,8 +1091,8 @@ try:
     print("---------------------------")
     quads.printTheQuads()
     print("---------------------------")
-    FD.printFuncDir()
-    print("---------------------------")
+    # FD.printFuncDir()
+    # print("---------------------------")
     # print("***************************")
     # FD.printVars()
     # print("---------------------------")
