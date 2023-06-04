@@ -178,8 +178,13 @@ class QuadrupleTable:
     def resetEra(self):
         self.eraTable = [0,0,0,0,0]
 
-    def generateParam(self):
+    def resetParamCounter(self):
+        self.paramCounter = 0
+
+    def incrementParamCounter(self):
         self.paramCounter += 1
+
+    def generateParam(self):
         varName = self.popOperand()
         operand = self.popOperand()
         paramAddress = self.popOperand()
@@ -187,8 +192,18 @@ class QuadrupleTable:
         self.address += 1
         self.quadPointer += 1
 
-    def resetParamCounter(self):
-        self.paramCounter = 0
+    def verifyParams(self, fParams):
+        # compare the amount of parameters sent and expected
+        if (self.paramCounter == len(fParams)):
+            while (fParams):
+                argumentType = self.popType()
+                paramType = fParams.pop()
+                if (paramType != argumentType):
+                    print(f"ERROR: Param is type {self.convertOp(paramType)} and argument is type {self.convertOp(argumentType)}.")
+                    exit()
+        else:
+            print(f"ERROR: Expected {len(fParams)} and recieved {self.paramCounter}")
+            exit()
 
     def checkReturn(self, hasReturn):
         if (not hasReturn):
@@ -229,21 +244,7 @@ class QuadrupleTable:
         self.quads.append(Quadruple(CONV['='], funcName, None, tmpAddress))
         self.quadPointer += 1
 
-    def verifyParams(self, fParams):
-        # compare the amount of parameters sent and expected
-        if (self.paramCounter == len(fParams)):
-            while (fParams):
-                argumentType = self.popType()
-                paramType = fParams.pop()
-                if (paramType != argumentType):
-                    print(f"ERROR: Param is type {self.convertOp(paramType)} and argument is type {self.convertOp(argumentType)}.")
-                    exit()
-        else:
-            print(f"ERROR: Expected {len(fParams)} and recieved {self.paramCounter}")
-            exit()
-
     def assignStdFunc(self):
-        self.printStacks()
         funcName = self.popOperand()
         var = self.popOperand()
 
@@ -347,7 +348,7 @@ class QuadrupleTable:
     '''
     def assignInput(self, tmpAddress):
         operand = self.popOperand()
-        operator = CONV['=']#self.popOperator()
+        operator = self.popOperator()
         self.quads.append(Quadruple(operator, tmpAddress, None, operand))
         self.quadPointer += 1
         self.address += 1
