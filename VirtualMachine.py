@@ -17,10 +17,11 @@ class VirtualMachine:
         self.fileNames = {}
         self.checkpoint = []
         self.endfunc = []
+        self.era = False
 
     def stop(self):
         self.control += 1
-        if self.control > 3:
+        if self.control > 5:
             exit()
 
     def parseQuads(self, quad):
@@ -46,9 +47,52 @@ class VirtualMachine:
         # print(operator, leftOperand, rightOperand, address)
         return operator, leftOperand, rightOperand, address
 
+    def getPrevValues(self):
+        scope = self.memory[self.memoryPointer - 1].getScope(self.quads[self.ip].leftOperand)
+        leftOperand = self.memory[self.memoryPointer - 1].getValue(scope, self.quads[self.ip].leftOperand)
+
+        scope = self.memory[self.memoryPointer - 1].getScope(self.quads[self.ip].rightOperand)
+        rightOperand = self.memory[self.memoryPointer - 1].getValue(scope, self.quads[self.ip].rightOperand)
+        return leftOperand, rightOperand
+
     def generateEraMemory(self, funcId):
         era = self.funcs[funcId]['fResources']
         self.memory[self.memoryPointer].generateEra(era[CONV['int']],era[CONV['float']],era[CONV['char']],era[CONV['file']],era[CONV['bool']],)
+
+    def doParamsBefore(self, operator, address):
+        # get previous values
+        prevLeft, prevRight = self.getPrevValues()
+
+        # get address of the left and right operand instead of value
+        left = self.quads[self.ip].leftOperand
+        right = self.quads[self.ip].rightOperand
+        
+        # set the scope for each
+        scopeAddress = self.memory[self.memoryPointer].getScope(address)
+        scopeLeft = self.memory[self.memoryPointer].getScope(left)
+        scopeRight = self.memory[self.memoryPointer].getScope(right)
+
+        if (operator == CONV['+']):
+            value = prevLeft + prevRight
+        elif (operator == CONV['-']):
+            value = prevLeft - prevRight
+        elif (operator == CONV['/']):
+            try:
+                value = prevLeft / prevRight
+            except ZeroDivisionError:
+                print("ERROR: Division by zero")
+                exit()
+        elif (operator == CONV['*']):
+            value = prevLeft * prevRight
+
+        self.memory[self.memoryPointer - 1].setValue(scopeAddress, address, value)
+        self.memory[self.memoryPointer].setValue(scopeAddress, address, value)
+        self.memory[self.memoryPointer].setValue(scopeLeft, left, prevLeft)
+
+        if (scopeRight == CONV['constant']):
+            pass
+        else:
+            self.memory[self.memoryPointer].setValue(scopeRight, right, prevRight)
 
     def initialize(self):
         while (True):
@@ -64,28 +108,40 @@ class VirtualMachine:
                 self.ip = address - 1
                 
             elif (operator == CONV['+']):
-                value = leftOperand + rightOperand
-                scope = self.memory[self.memoryPointer].getScope(address)
-                self.memory[self.memoryPointer].setValue(scope, address, value)
-
-            elif(operator == CONV['-']):
-                value = leftOperand - rightOperand
-                scope = self.memory[self.memoryPointer].getScope(address)
-                self.memory[self.memoryPointer].setValue(scope, address, value)
-
-            elif(operator == CONV['*']):
-                value = leftOperand * rightOperand
-                scope = self.memory[self.memoryPointer].getScope(address)
-                self.memory[self.memoryPointer].setValue(scope, address, value)
-
-            elif(operator == CONV['/']):
-                try:
-                    value = leftOperand / rightOperand
+                if(self.era):
+                    self.doParamsBefore(operator,address)
+                else:
+                    value = leftOperand + rightOperand
                     scope = self.memory[self.memoryPointer].getScope(address)
                     self.memory[self.memoryPointer].setValue(scope, address, value)
-                except ZeroDivisionError:
-                    print("ERROR: Division by zero")
-                    exit()
+
+            elif(operator == CONV['-']):
+                if(self.era):
+                    self.doParamsBefore(operator,address)
+                else:
+                    value = leftOperand - rightOperand
+                    scope = self.memory[self.memoryPointer].getScope(address)
+                    self.memory[self.memoryPointer].setValue(scope, address, value)
+
+            elif(operator == CONV['*']):
+                if(self.era):
+                    self.doParamsBefore(operator,address)
+                else:
+                    value = leftOperand * rightOperand
+                    scope = self.memory[self.memoryPointer].getScope(address)
+                    self.memory[self.memoryPointer].setValue(scope, address, value)
+
+            elif(operator == CONV['/']):
+                if(self.era):
+                    self.doParamsBefore(operator,address)
+                else:
+                    try:
+                        value = leftOperand / rightOperand
+                        scope = self.memory[self.memoryPointer].getScope(address)
+                        self.memory[self.memoryPointer].setValue(scope, address, value)
+                    except ZeroDivisionError:
+                        print("ERROR: Division by zero")
+                        exit()
 
             elif(operator == CONV['=']):
                 value = leftOperand
@@ -97,7 +153,6 @@ class VirtualMachine:
                 value = self.memory[self.memoryPointer].getValue(scope, address)
                 
                 # print(f"now parsing quad {self.ip} with {atts} and pointer {self.memoryPointer}")
-                # self.memory[self.memoryPointer].printMem()
                 if(type(value) == bytes):
                         print(value)
                 elif(type(value) == str):
@@ -112,6 +167,10 @@ class VirtualMachine:
                 scope = self.memory[self.memoryPointer].getScope(address)
                 typeToBe = self.memory[self.memoryPointer].getType(address)
                 value = input()
+
+                '''
+                Validate input type
+                '''
 
                 if (typeToBe == CONV['int']):
                     self.memory[self.memoryPointer].setValue(scope, address, int(value))
@@ -177,6 +236,7 @@ class VirtualMachine:
             
             # <FUNCTIONS>
             elif(operator == CONV['return']):
+                print(f"I came here with memory pointer: {self.memoryPointer}")
                 self.ip = self.endfunc.pop() - 1
                 # assign back to global memory
                 if (self.memoryPointer != 0):
@@ -184,15 +244,17 @@ class VirtualMachine:
                 
 
             elif(operator == CONV['gosub']):
+                self.era = False
                 # add current pointer to the stack
                 self.checkpoint.append(self.ip)
                 self.ip = address - 1
 
             elif(operator == CONV['era']):
+                self.era = True
                 # create a copy of the constant and global variables in the new dictionary
                 auxMemory = VirtualMemory()
                 auxMemory.copyConstAndGlobal(self.memory[0].getConstAndGlobal())
-                self.endfunc.insert(0,self.funcs[address]["endfunc"])
+                self.endfunc.append(self.funcs[address]["endfunc"])
 
                 # add memory to the stack
                 self.memory.append(auxMemory)
@@ -204,24 +266,14 @@ class VirtualMachine:
                 era = self.generateEraMemory(address)
 
             elif(operator == CONV['param']):
-                # works with single call
-                scope = self.memory[self.memoryPointer].getScope(address)
-                value = self.memory[0].getValue(scope, address)
-                self.memory[self.memoryPointer].setValue(scope, address, value)
+                if (self.memoryPointer == 1):
+                    scope = self.memory[self.memoryPointer].getScope(address)
+                    value = self.memory[self.memoryPointer -1].getValue(scope, address)
+                    self.memory[self.memoryPointer].setValue(scope, address, value)
+                else:
+                    scope = self.memory[self.memoryPointer].getScope(address)
+                    self.memory[self.memoryPointer].setValue(scope, address, leftOperand)
 
-                # if (self.memoryPointer < 2):
-                #     # print(operator, leftOperand, rightOperand, address)
-                #     # value = leftOperand
-                # else:
-                #     # assign previous result to param 
-                #     print("ip is ", self.ip)
-                #     print(self.quads[self.ip].operator, self.quads[self.ip].leftOperand,self.quads[self.ip].rightOperand, self.quads[self.ip].address)
-                #     scope = self.memory[self.memoryPointer].getScope(address)
-                #     self.memory[self.memoryPointer - 1].printMem()
-                #     value = self.memory[self.memoryPointer - 1].getValue(scope, leftOperand)
-                #    
-                #     self.memory[self.memoryPointer].setValue(scope, address, value)
-                #
             elif(operator == CONV['endfunc']):
 
                 if (len(self.memory) == 1):
@@ -359,3 +411,15 @@ memory  = data['memory']
 vm = VirtualMachine(quads, funcs, memory)
 vm.initialize()
 
+        # print("*" * 20)
+        # print(f"now parsing quad {self.ip} with {atts}")
+        # print(f" memory pointer is {self.memoryPointer}")
+        # print(prevLeft, prevRight)
+        # print(scopeLeft, scopeRight, scopeAddress)
+        # print(left, right, address)
+        # print(f"doing operation {prevLeft} + {prevRight}")
+        # print(f"result is {value}")
+        # print(f"saving the value to {address}")
+        # print(f"value is now {self.memory[self.memoryPointer - 1].getValue(scopeAddress, address)}")
+        # print("*" * 20)
+        
