@@ -13,15 +13,15 @@ class VirtualMachine:
         self.memoryPointer = 0
         self.ip = 0
         self.control = 0
-        self.file = ""
-        self.fileNames = {}
         self.checkpoint = []
         self.endfunc = []
         self.era = False
+        self.file = ""
+        self.fileNames = {}
 
-    def stop(self):
+    def stop(self, times):
         self.control += 1
-        if self.control > 5:
+        if self.control > times:
             exit()
 
     def parseQuads(self, quad):
@@ -94,6 +94,9 @@ class VirtualMachine:
         else:
             self.memory[self.memoryPointer].setValue(scopeRight, right, prevRight)
 
+    def convertOp(self, op):
+        return list(CONV.keys())[list(CONV.values()).index(op)]
+
     def initialize(self):
         while (True):
             atts = self.parseQuads(self.quads)
@@ -102,7 +105,7 @@ class VirtualMachine:
             rightOperand = atts[2]
             address = atts[3]
 
-            # print(f"now parsing quad {self.ip} with {atts}")
+            # print(f"now parsing quad {self.ip} with {self.convertOp(operator)} {atts[1:]}")
             if (operator == CONV['main']):
                 era = self.generateEraMemory('main')
                 self.ip = address - 1
@@ -152,7 +155,6 @@ class VirtualMachine:
                 scope = self.memory[self.memoryPointer].getScope(address)
                 value = self.memory[self.memoryPointer].getValue(scope, address)
                 
-                # print(f"now parsing quad {self.ip} with {atts} and pointer {self.memoryPointer}")
                 if(type(value) == bytes):
                         print(value)
                 elif(type(value) == str):
@@ -173,11 +175,23 @@ class VirtualMachine:
                 '''
 
                 if (typeToBe == CONV['int']):
-                    self.memory[self.memoryPointer].setValue(scope, address, int(value))
+                    try:
+                        self.memory[self.memoryPointer].setValue(scope, address, int(value))
+                    except ValueError:
+                        print("ERROR: Expected input of type int.")
+                        exit()
                 elif (typeToBe == CONV['float']):
-                    self.memory[self.memoryPointer].setValue(scope, address, float(value))
+                    try:
+                        self.memory[self.memoryPointer].setValue(scope, address, float(value))
+                    except ValueError:
+                        print("ERROR: Expected input of type float.")
+                        exit()
                 elif (typeToBe == CONV['char']):
-                    self.memory[self.memoryPointer].setValue(scope, address, float(value))
+                    try:
+                        self.memory[self.memoryPointer].setValue(scope, address, float(value))
+                    except ValueError:
+                        print("ERROR: Expected input of type string.")
+                        exit()
 
             # <RELATIONAL OPERATORS>
             elif(operator == CONV['-gt']):
@@ -236,11 +250,13 @@ class VirtualMachine:
             
             # <FUNCTIONS>
             elif(operator == CONV['return']):
-                print(f"I came here with memory pointer: {self.memoryPointer}")
                 self.ip = self.endfunc.pop() - 1
                 # assign back to global memory
                 if (self.memoryPointer != 0):
-                    self.memory[0].setValue(CONV['global'], address, leftOperand)
+                    if (leftOperand != 0):
+                        self.memory[0].setValue(CONV['global'], address, leftOperand)
+                else: 
+                    self.memory[0].setValue(CONV['global'], address, address)
                 
 
             elif(operator == CONV['gosub']):
@@ -266,6 +282,7 @@ class VirtualMachine:
                 era = self.generateEraMemory(address)
 
             elif(operator == CONV['param']):
+                # self.stop(6)
                 if (self.memoryPointer == 1):
                     scope = self.memory[self.memoryPointer].getScope(address)
                     value = self.memory[self.memoryPointer -1].getValue(scope, address)

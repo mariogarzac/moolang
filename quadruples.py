@@ -40,7 +40,6 @@ class QuadrupleTable:
         self.quads = []
         self.paramCounter = 0
         self.quadPointer = 0
-        self.address = 1
         self.eraTable = [0,0,0,0,0]
 
     # <INSERT INTO STACK>
@@ -136,7 +135,7 @@ class QuadrupleTable:
 
     # QUADS---------------------------------------------------------------------
     # <HIT THE QUADS>
-    def generateQuad(self,operator, rightType, leftType, resType, tmpAddress):
+    def generateQuad(self,operator, resType, tmpAddress):
 
         if (operator == CONV['=']):
             res = self.popOperand()
@@ -189,7 +188,6 @@ class QuadrupleTable:
         operand = self.popOperand()
         paramAddress = self.popOperand()
         self.quads.append(Quadruple(CONV['param'], paramAddress, None, operand))
-        self.address += 1
         self.quadPointer += 1
 
     def verifyParams(self, fParams):
@@ -351,21 +349,20 @@ class QuadrupleTable:
         operator = self.popOperator()
         self.quads.append(Quadruple(operator, tmpAddress, None, operand))
         self.quadPointer += 1
-        self.address += 1
 
 
     # -------------------------------------------------------------------------
     # <GOTOs>
     def generateGotoF(self):
         resType = self.popType()
-        if (resType == CONV['bool']):
-            res = self.popOperand()
-            self.quads.append(Quadruple(CONV['gotof'], res, None, None))
-            self.jumpStack.append(self.quadPointer) # jump back here
-            self.quadPointer += 1
-        else:
-            print(f"ERROR: Expression type must be of type bool, not {self.convertOp(resType)}.")
-            exit()
+        # if (resType == CONV['bool']):
+        res = self.popOperand()
+        self.quads.append(Quadruple(CONV['gotof'], res, None, None))
+        self.jumpStack.append(self.quadPointer) # jump back here
+        self.quadPointer += 1
+        # else:
+        #     print(f"ERROR: Expression type must be of type bool, not {self.convertOp(resType)}.")
+        #     exit()
 
     def generateGoto(self):
         gotof = self.popJump()
@@ -423,7 +420,6 @@ class QuadrupleTable:
                 self.quads.append(Quadruple(CONV['gotof'],res, None, None))
                 self.insertJump() # insert quad of expression
                 self.quadPointer += 1
-                self.address += 1
             else: 
                 print(f"ERROR: Control variable is type {self.convertOp(varType)} and modifier is type {self.convertOp(modType)}")
                 exit()
@@ -465,6 +461,17 @@ class QuadrupleTable:
         self.quads.insert(newPosition, assignmentQuad)
         self.quads.insert(newPosition, expQuad)
 
+    # -------------------------------------------------------------------------
+    # ARRAYS
+    def generateVerifyDims(self, xDim, yDim):
+        self.popType()
+        operand = self.getOperand()
+        self.quads.append(Quadruple(CONV['ver'], f"${xDim}", f"${yDim}", operand))
+
+
+    def addConstantK(self, tmpAddress):
+        operand = self.popOperand()
+        self.quads.append(Quadruple(CONV['+'], operand, None, tmpAddress))
 
     # -------------------------------------------------------------------------
     # MAIN and ENDFUNC
@@ -492,4 +499,3 @@ class QuadrupleTable:
     #     self.eraTable = [0,0,0,0,0]
     #     self.quads = []
     #     self.quadPointer = 1
-    #     self.address = 0
