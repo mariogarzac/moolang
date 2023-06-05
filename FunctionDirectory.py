@@ -145,6 +145,27 @@ class FunctionDirectory:
     def getFuncEndfunc(self, funcId):
         return self.funcDirectory[funcId]["endfunc"]
 
+    def getVarDims(self, varId):
+        existsLocal = True
+        try:
+            dims = self.vars[CONV['local']]["vars"][varId]["vXDims"],  self.vars[CONV['local']]["vars"][varId]["vYDims"]
+            return dims
+        except KeyError:
+            existsLocal = False
+            pass
+
+        # find in global scope
+        if (not existsLocal):
+            try:
+                dims =  self.vars[CONV['global']]["vars"][varId]["vXDims"], self.vars[CONV['global']]["vars"][varId]["vYDims"]
+                return dims
+            except KeyError:
+                print(f"ERROR: Variable {varId} does not exist")
+                exit()
+
+    def getVarYDim(self,scope, varId):
+        return self.vars[scope]["vars"][varId]["vYDims"]
+
     # VIRTUAL MEMORY
     def setAddress(self, scope,varId, varType):
         try:
