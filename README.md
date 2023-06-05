@@ -35,3 +35,12 @@ no logré empezarlas.
 ## Avance 6 21/05/23
 Para este avance terminé cuádruplos que tenía pendientes y el cuádruplo para el ciclo for. Inicié las funciones, sin
 embargo no están completas todavía. Para el caso de la memoria virtual, solo lo tengo en concepto, pero falta la implementación.
+
+## Avance 7 29/05/23
+Para este avance arregle problemas con los ciclos y las funciones. Además logré cambiar exitósamente todo a su dirección de memoria virtual.
+La máquina virtual aún no se ha comenzado, sin embargo ya se tiene planificado como será en ejecución. 
+
+## Avance 8 3/06/23
+Para este avance tuve mucho progreso. Logré hacer que la máquina virtual funcionara para funciones no recursivas, ciclos y ciclos andidados al igual
+que condicionales. También logré hacer que mis funciones especiales funcionaran en ejecución. He realizado pruebas con los algoritmos de fibonacci y factorial y
+las pruebas han sido exitosas de manera iterativa. La documentación está a la mitad en la entrega de este avance.
