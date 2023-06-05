@@ -17,7 +17,7 @@ main(){
      print("\n")
 
      string_hash = hash_md5(string)
-     encrypted_hash = hash_md5(string)
+     encrypted_hash = hash_md5(encrypted)
 
      if (string_hash -eq encrypted_hash){
             print("They are different. Is one encrypted?")
