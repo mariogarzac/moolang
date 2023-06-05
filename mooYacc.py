@@ -1091,10 +1091,10 @@ try:
                 {"quadruples": quads.quads, "funcDir": FD.funcDirectory, "memory": FD.memory }, file)
 
     print("-----------QUADS-----------")
-    quads.printStacks()
-    print("---------------------------")
     quads.printTheQuads()
     print("---------------------------")
+    # quads.printStacks()
+    # print("---------------------------")
     # FD.printFuncDir()
     # print("---------------------------")
     # print("***************************")
