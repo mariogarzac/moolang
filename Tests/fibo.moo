@@ -13,15 +13,29 @@ func fiboIter(int n) -> int {
     return res;
     }
 
+func fiboRec(int n) -> int{
+        var int res, x,y;
+    
+    if (n -lt 1) {
+        res = n;
+    } else {
+        x = fiboRec(n - 1);
+        y = fiboRec(n - 2);
+        res = x + y;
+    }
+    return res;
+}
+
 main(){
     var int num, res;
 
-    print("Enter number to calculate: ")
+    print("Enter a number: ")
     num = input()
 
     res = fiboIter(num);
     print("Iterative fibo is: ", res, "\n")
 
-
+    res = fiboRec(num);
+    print("Recursive fibo is: ", res, "\n")
 
     }
