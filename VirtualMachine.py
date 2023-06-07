@@ -283,7 +283,7 @@ class VirtualMachine:
 
             elif(operator == CONV['param']):
                 # self.stop(6)
-                if (self.memoryPointer == 1):
+                if (self.memoryPointer > 1):
                     scope = self.memory[self.memoryPointer].getScope(address)
                     value = self.memory[self.memoryPointer -1].getValue(scope, address)
                     self.memory[self.memoryPointer].setValue(scope, address, value)

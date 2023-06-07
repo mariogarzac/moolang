@@ -41,7 +41,7 @@ class FunctionDirectory:
         self.funcDirectory[funcId]["fType"] = funcType
         self.funcDirectory[funcId]["pointer"] = 0
         self.funcDirectory[funcId]["endfunc"] = 0
-        self.funcDirectory[funcId]["fResources"] = {CONV['int']:0, CONV['float']:0, CONV['char']:0, CONV['file']:0, CONV['bool']:0 },
+        self.funcDirectory[funcId]["fResources"] = {CONV['int']:0, CONV['float']:0, CONV['char']:0, CONV['file']:0, CONV['bool']:0 }
         self.funcDirectory[funcId]["fParams"] = []
         self.funcDirectory[funcId]["fParamAddress"] = []
 
