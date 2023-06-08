@@ -373,7 +373,11 @@ class QuadrupleTable:
     # IF
     def generateGotoIf(self):
         self.quadPointer += 1
-        self.quads.append(Quadruple(CONV['goto'],None, None, f"${self.quadPointer + 1}"))
+        self.quads.append(Quadruple(CONV['goto'],None, None, f"${self.quadPointer}"))
+
+    def fillGotoIf(self):
+        jump = self.popJump()
+        self.quads[jump].address = f"${self.quadPointer}"
 
     def fillGotoF(self , mod):
         quadToFill = self.popJump()

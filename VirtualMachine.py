@@ -57,7 +57,7 @@ class VirtualMachine:
 
     def generateEraMemory(self, funcId):
         era = self.funcs[funcId]['fResources']
-        self.memory[self.memoryPointer].generateEra(era[CONV['int']],era[CONV['float']],era[CONV['char']],era[CONV['file']],era[CONV['bool']],)
+        self.memory[self.memoryPointer].generateEra(era[CONV['int']],era[CONV['float']],era[CONV['char']],era[CONV['file']],era[CONV['bool']])
 
     def doParamsBefore(self, operator, address):
         # get previous values
@@ -84,15 +84,12 @@ class VirtualMachine:
                 exit()
         elif (operator == CONV['*']):
             value = prevLeft * prevRight
-
+        
+        # set result in previous memory dictionary 
         self.memory[self.memoryPointer - 1].setValue(scopeAddress, address, value)
-        self.memory[self.memoryPointer].setValue(scopeAddress, address, value)
-        self.memory[self.memoryPointer].setValue(scopeLeft, left, prevLeft)
 
-        if (scopeRight == CONV['constant']):
-            pass
-        else:
-            self.memory[self.memoryPointer].setValue(scopeRight, right, prevRight)
+        #Update the current memory with info from the previous
+        self.memory[self.memoryPointer].setValue(scopeAddress, left, prevLeft)
 
     def convertOp(self, op):
         return list(CONV.keys())[list(CONV.values()).index(op)]
@@ -147,6 +144,7 @@ class VirtualMachine:
                         exit()
 
             elif(operator == CONV['=']):
+                print(atts)
                 value = leftOperand
                 scope = self.memory[self.memoryPointer].getScope(address)
                 self.memory[self.memoryPointer].setValue(scope, address, value)
@@ -169,10 +167,6 @@ class VirtualMachine:
                 scope = self.memory[self.memoryPointer].getScope(address)
                 typeToBe = self.memory[self.memoryPointer].getType(address)
                 value = input()
-
-                '''
-                Validate input type
-                '''
 
                 if (typeToBe == CONV['int']):
                     try:
@@ -266,7 +260,7 @@ class VirtualMachine:
                 self.ip = address - 1
 
             elif(operator == CONV['era']):
-                self.era = True
+                self.era = True 
                 # create a copy of the constant and global variables in the new dictionary
                 auxMemory = VirtualMemory()
                 auxMemory.copyConstAndGlobal(self.memory[0].getConstAndGlobal())
@@ -277,20 +271,13 @@ class VirtualMachine:
 
                 # increment the memory pointer to use the functions memory
                 self.memoryPointer += 1
-                
-                # create memory for the function
-                era = self.generateEraMemory(address)
+                self.generateEraMemory(address)
 
             elif(operator == CONV['param']):
-                # self.stop(6)
-                if (self.memoryPointer > 1):
-                    scope = self.memory[self.memoryPointer].getScope(address)
-                    value = self.memory[self.memoryPointer -1].getValue(scope, address)
-                    self.memory[self.memoryPointer].setValue(scope, address, value)
-                else:
-                    scope = self.memory[self.memoryPointer].getScope(address)
-                    self.memory[self.memoryPointer].setValue(scope, address, leftOperand)
-
+                scope = self.memory[self.memoryPointer].getScope(address)
+                value = self.memory[self.memoryPointer - 1].getValue(scope, self.quads[self.ip].leftOperand)
+                self.memory[self.memoryPointer].setValue(scope, address, value)
+                
             elif(operator == CONV['endfunc']):
 
                 if (len(self.memory) == 1):
@@ -304,7 +291,6 @@ class VirtualMachine:
 
                     # point to the previous memory
                     self.memoryPointer -= 1
-                    # print(self.quads[self.ip].operator,self.quads[self.ip].leftOperand,self.quads[self.ip].rightOperand,self.quads[self.ip].address, )
 
             # <SPECIAL FUNCTIONS>
             elif(operator == CONV['open']):
@@ -358,8 +344,6 @@ class VirtualMachine:
                     print(f"ERROR: Invalid token {target}.")
                     exit()
 
-
-                    
             elif(operator == CONV['decrypt']):
                 try:
                     key = rightOperand
@@ -427,16 +411,3 @@ memory  = data['memory']
 
 vm = VirtualMachine(quads, funcs, memory)
 vm.initialize()
-
-        # print("*" * 20)
-        # print(f"now parsing quad {self.ip} with {atts}")
-        # print(f" memory pointer is {self.memoryPointer}")
-        # print(prevLeft, prevRight)
-        # print(scopeLeft, scopeRight, scopeAddress)
-        # print(left, right, address)
-        # print(f"doing operation {prevLeft} + {prevRight}")
-        # print(f"result is {value}")
-        # print(f"saving the value to {address}")
-        # print(f"value is now {self.memory[self.memoryPointer - 1].getValue(scopeAddress, address)}")
-        # print("*" * 20)
-        

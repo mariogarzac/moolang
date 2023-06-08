@@ -6,7 +6,8 @@ from FunctionDirectory import FunctionDirectory as FD
 from FunctionDirectory import Variable as V
 from cube import CONV
 
-file = input('filename: ')
+#file = input('filename: ')
+file = 'factorial'
 directory = 'Tests/'
 filename = directory + file + '.moo'
  
@@ -246,9 +247,16 @@ def p_condition(p):
 
 def p_condition_1(p):
     '''
-    condition_1 : ELSE fill_gotof insert_goto_if LCURLY block RCURLY 
+    condition_1 : ELSE fill_gotof push_jump insert_goto_if LCURLY block RCURLY fill_goto_if
                 | fill_gotof empty
     '''
+
+def p_fill_goto_if(p):
+    '''
+    fill_goto_if : empty
+    '''
+    quads.fillGotoIf()
+    
 
 # while loops
 def p_while_loop(p):
