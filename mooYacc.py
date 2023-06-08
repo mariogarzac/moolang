@@ -6,8 +6,8 @@ from FunctionDirectory import FunctionDirectory as FD
 from FunctionDirectory import Variable as V
 from cube import CONV
 
-#file = input('filename: ')
-file = 'factorial'
+file = input('filename: ')
+#file = 'factorial'
 directory = 'Tests/'
 filename = directory + file + '.moo'
  

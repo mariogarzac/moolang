@@ -144,7 +144,6 @@ class VirtualMachine:
                         exit()
 
             elif(operator == CONV['=']):
-                print(atts)
                 value = leftOperand
                 scope = self.memory[self.memoryPointer].getScope(address)
                 self.memory[self.memoryPointer].setValue(scope, address, value)
@@ -157,7 +156,7 @@ class VirtualMachine:
                         print(value)
                 elif(type(value) == str):
                     if (value[1:-1] == r"\n"):
-                        print("\n")
+                        print("\n",end="")
                     else:
                         print(value.replace('"', ''), end="")
                 else:
@@ -248,7 +247,7 @@ class VirtualMachine:
                 # assign back to global memory
                 if (self.memoryPointer != 0):
                     if (leftOperand != 0):
-                        self.memory[0].setValue(CONV['global'], address, leftOperand)
+                        self.memory[self.memoryPointer - 1].setValue(CONV['global'], address, leftOperand)
                 else: 
                     self.memory[0].setValue(CONV['global'], address, address)
                 
