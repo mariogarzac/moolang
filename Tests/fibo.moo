@@ -16,7 +16,7 @@ func fiboIter(int n) -> int {
 func fiboRec(int n) -> int{
         var int res, x,y;
     
-    if (n -lt 1) {
+    if (n -lt 2) {
         res = n;
     } else {
         x = fiboRec(n - 1);
@@ -35,7 +35,7 @@ main(){
     res = fiboIter(num);
     print("Iterative fibo is: ", res, "\n")
 
-    res = fiboRec(num);
+    res = fiboRec(num -1);
     print("Recursive fibo is: ", res, "\n")
 
     }

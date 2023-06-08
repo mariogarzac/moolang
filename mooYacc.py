@@ -1098,9 +1098,9 @@ try:
         pickle.dump(
                 {"quadruples": quads.quads, "funcDir": FD.funcDirectory, "memory": FD.memory }, file)
 
-    print("-----------QUADS-----------")
-    quads.printTheQuads()
-    print("---------------------------")
+    # print("-----------QUADS-----------")
+    # quads.printTheQuads()
+    # print("---------------------------")
     # quads.printStacks()
     # print("---------------------------")
     # FD.printFuncDir()

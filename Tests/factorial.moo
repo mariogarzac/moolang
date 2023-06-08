@@ -21,6 +21,7 @@ func recFact(int n) -> int {
     else{
         x = recFact(n - 1);
         res = n * x;
+        print(res, "\n")
         }
     return res;
 }
@@ -28,7 +29,6 @@ func recFact(int n) -> int {
  
 main() {
     var int num, a, b, n;
-    #n = 0;
 
     print("Enter the number to calculate: ")
     num = input()
