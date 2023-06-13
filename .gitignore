@@ -134,4 +134,5 @@ parse*
 Files
 data.obj
 *.txt
+.installed
 
