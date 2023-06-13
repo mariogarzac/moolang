@@ -33,7 +33,6 @@ main(){
      # File encryption
      arch1 = open("file1.txt")
      encrypted_file = encrypt(arch1, key)
-     print("encrypted_file " ,encrypted_file)
      print("\n")
 
      # Hash check
